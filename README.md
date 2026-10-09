@@ -62,3 +62,19 @@ results/            *.csv (every number behind Table 1 and Table 2) + figures/F1
 hand/               reference derivations for H1-H5 (see hand/README.md)
 T12_Checkpoint2.tex / .pdf   the submitted report
 ```
+## Declarations
+
+External code: none — every solver in `src/optim/` is written from scratch with numpy and the
+standard library only.
+
+AI assistance: we consulted an AI assistant (Claude) for help while working on this checkpoint.
+All code was read, run and verified by the author before committing.
+
+## References
+
+- Lectures 1-5, Nurseitova A.T., Introduction to Optimization (ItO2025).
+- B. T. Polyak, "Some methods of speeding up the convergence of iteration methods",
+  USSR Computational Mathematics and Mathematical Physics, 4(5):1-17, 1964.
+  (Heavy-ball constants quoted in S3.)
+- D. P. Kingma and J. Ba, "Adam: A Method for Stochastic Optimization", ICLR 2015.
+  (Update rule and default beta1, beta2, eps.)
