@@ -1,0 +1,3 @@
+problem,pure_k,pure_monotone,pure_min_eig,damped_k,damped_monotone,damped_min_eig,damped_n_grad_fallback
+R2,5,False,0.39936079757035703,24,True,0.39936076855928704,0
+Project,16,False,-2.186800303966751e-08,11,True,0.001951446730098876,3

@@ -1,0 +1,7 @@
+beta,k,status,f_ever_increased
+0.0,32076,converged,False
+0.5,16014,converged,True
+0.8,6329,converged,True
+0.9,3020,converged,True
+0.95,1324,converged,True
+0.99,3185,converged,True

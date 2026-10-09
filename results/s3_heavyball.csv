@@ -1,0 +1,5 @@
+config,alpha,beta,k,status
+heavy-ball (Polyak),0.006424946598556331,0.78613515439866,163,converged
+tuned momentum,0.0031622776601683794,0.9,190,converged
+"plain GD, alpha*",0.0035971223021582736,-,1914,converged
+sqrt(kappa),-,-,16.64331697709324,-

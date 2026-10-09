@@ -1,0 +1,2 @@
+problem,GD_alpha,GD_k,GD_extended,GDBT_k,GDBT_mean_alpha,GDBT_mean_halvings,NewtonPure_k,NewtonDamped_k,Momentum_alpha,Momentum_beta,Momentum_k,Momentum_extended,Adam_alpha,Adam_k,Adam_extended
+Project (storyline B),1000.0,2,True,5303,1.0,0.0,16,11,1000.0,0.5,2,True,0.31622776601683794,246,False
