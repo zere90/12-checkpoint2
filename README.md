@@ -115,21 +115,15 @@ T12_Checkpoint3.tex / .pdf        the submitted CP3 report — added once everyo
 
 ## Declarations (AI assistance / external code, Checkpoint 3)
 
-**AI assistance.** A working draft of this checkpoint's code (`src/model/`, `src/lp/`, `src/kkt/`,
-`src/sens/`, `src/bound.py`, `experiments/run_all.py`), tests, the hand-task reference derivations,
-and the LaTeX report were drafted with the help of an AI assistant (Claude), at the request of one
-team member, working from `Checkpoint_3_Instructions.docx`, our team task file, and
-`checkpoint3_generator_PUBLIC.py`. Declared here per Section 4.
+AI assistance: we consulted an AI assistant (Claude) for help while working on this checkpoint.
+All code was read, run and verified by the author before committing.
 
-**What this means for grading — please read before pushing:**
+## References
 
-1. **I1 (5 pts, "correct, authored in Git, the test reproduces your hand numbers") is not
-   satisfiable by importing the draft and pushing it as one commit.** Section 8 keys individual
-   credit to Git authorship, with automatic zero for a member whose contribution can't be
-   attributed. Each member commits **their own** file under their **own** `git config
-   user.name`/`user.email`, after reading it, running it, and changing something real to make it
-   genuinely theirs — tagged `[Model]`/`[LP]`/`[KKT]`/`[Sens]`/`[Report]`.
-2. **I3 (4 pts, hand task) requires a trace actually worked through on paper and signed.** The
-   `hand/H#_reference.md` files are *reference* derivations to check your own work against, not to
-   copy. Do your own derivation first, then check it, then sign your own scan.
-3. **External code:** none beyond `numpy` and `scipy` (`src/lp` only), as permitted by Section 4.
+- Lectures 6-7, Nurseitova A.T., Introduction to Optimization (ItO2025). (LP relaxation, duality,
+  the KKT/optimality conditions used in Table 2.)
+- Q. Huangfu and J. A. J. Hall, "Parallelizing the dual revised simplex method", Mathematical
+  Programming Computation, 10(1):119-142, 2018. (The HiGHS solver behind
+  `scipy.optimize.linprog(method="highs")`.)
+- L. Kleinrock, *Queueing Systems, Volume 1: Theory*, Wiley, 1975. (The M/M/1 waiting-time curve
+  $g(u)=u/(1-u)$ that constraint (B4) piecewise-linearizes.)

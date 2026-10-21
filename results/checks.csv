@@ -1,6 +1,10 @@
-problem,check_grad,check_hess
-R1,2.2444027081292006e-08,4.84146767121274e-08
-R2,9.187692739942577e-08,6.276650310610421e-08
-Q1,1.2816826711059548e-08,3.2096068025566638e-09
-Q2,1.746275302139111e-08,5.097660960018402e-09
-Project,1.8198133971969455e-11,n/a (central-diff Hessian)
+quantity,computed,task_file,match
+S (servers),10,10,True
+M (VMs),35,35,True
+sum cpu_cap,454,454,True
+sum mem_cap,1680,1680,True
+sum cpu_req,172,172,True
+sum mem_req,615,615,True
+forbidden pairs (fixed to 0),60,60,True
+variables (Task 1),360,360,True
+constraint rows (Task 1),95,95,True

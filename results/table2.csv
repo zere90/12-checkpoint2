@@ -1,2 +1,7 @@
-problem,GD_alpha,GD_k,GD_extended,GDBT_k,GDBT_mean_alpha,GDBT_mean_halvings,NewtonPure_k,NewtonDamped_k,Momentum_alpha,Momentum_beta,Momentum_k,Momentum_extended,Adam_alpha,Adam_k,Adam_extended
-Project (storyline B),1000.0,2,True,5303,1.0,0.0,16,11,1000.0,0.5,2,True,0.31622776601683794,246,False
+condition,value,satisfied (<=1e-6)
+"(a) primal feasibility, max violation",8.882e-16,True
+"(b) dual feasibility (signs), max violation",0.000e+00,True
+"(c) complementary slackness, max |pi*slack|",1.110e-16,True
+"(d) reduced costs, max violation",8.787e-17,True
+"(e) strong duality, |gap|",8.882e-16,True
+ALL FIVE satisfied,,True

@@ -1,0 +1,11 @@
+quantity,value
+row,B1: VM 13 placed exactly once
+b0,1.0
+z(b-0.01),5.205338
+z(b),5.209695
+z(b+0.01),5.214052
+left_slope,0.435730
+pi (solver dual price),0.435730
+right_slope,0.435730
+interval_ok (left<=pi<=right),True
+degenerate,False

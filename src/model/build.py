@@ -1,4 +1,4 @@
- """src/model -- M1 (GD-role successor): data loading and matrix-form bookkeeping.
+"""src/model -- M1 (GD-role successor): data loading and matrix-form bookkeeping.
 
 Builds the reference model of the Checkpoint 3 handout (Section 2, storyline B, variant 2 --
 cloud resource allocation with zones) in a solver-agnostic matrix form, and the tiny "triangle
