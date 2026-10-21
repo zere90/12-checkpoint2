@@ -1,0 +1,378 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.85in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\title{\textbf{Introduction to Optimization}\\[2pt]
+Checkpoint 3: Constrained Component\\
+Storyline B --- Cloud Resource Allocation (Variant 2: Zones)}
+\author{Team T12 (Section 3)\\[4pt]
+\small Tilesbay Yermukhamed \quad Rakhima Noken \quad Tamerlan Aitzhanov\\
+\small Zere Zhussupbekova \quad Danial Kabdulla\\[6pt]
+\normalsize Data: \texttt{cp34\_instance(12, 'B', 2)}}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-20pt}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Repository} & \url{https://github.com/zere90/12-checkpoint2} \\
+\textbf{Tag} & \texttt{checkpoint3} \\
+\textbf{Commit hash} & \textit{(run \texttt{git rev-parse HEAD} after the final push, paste it here)} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{Name $\leftrightarrow$ role}
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lllcc@{}}
+\toprule
+Role & Member & Code authored & Task / Table & Section / hand task \\
+\midrule
+M1 & Tilesbay Yermukhamed & \texttt{src/model/} & Task 1 & S1, H1 \\
+M2 & Rakhima Noken & \texttt{src/lp/} & Task 2, Table 1 & S2, H2 \\
+M3 & Tamerlan Aitzhanov & \texttt{src/kkt/} & Task 3, Table 2 & S3, H3 \\
+M4 & Danial Kabdulla & \texttt{src/sens/} & Task 4, Table 3 & S4, H4 \\
+M5 (project lead) & Zere Zhussupbekova & \texttt{experiments/run\_all.py}, tables, PDF & Task 5 & S5, H5 \\
+\bottomrule
+\end{tabular}%
+}
+\end{center}
+
+\subsection*{Declarations}
+\textbf{External code:} \texttt{src/lp/solve.py} uses \texttt{scipy.optimize.linprog(method=}
+\texttt{"highs")} as the LP solver, as explicitly permitted by Section 4 ("Any LP solver"); every
+other module (\texttt{src/model/}, \texttt{src/kkt/}, \texttt{src/sens/}, \texttt{src/bound.py}) is
+written from scratch with \texttt{numpy} and the standard library only. \textbf{AI assistance:} we
+consulted an AI assistant (Claude) for help while working on this checkpoint. All code was read,
+run and verified by the author before committing.
+
+\section{Table 1 --- model, LP value and fractionality}
+
+Computed instance values match the task file exactly: $S{=}10$ servers, $M{=}35$ VMs, $\sum
+\text{cpu\_cap}{=}454$, $\sum\text{mem\_cap}{=}1680$, $\sum\text{cpu\_req}{=}172$,
+$\sum\text{mem\_req}{=}615$, $60$ forbidden (zone-mismatched) pairs kept with upper bound $0$,
+giving $360$ variables and $95$ constraint rows (35 of (B1) + 10 of (B2) + 10 of (B3) + 40 of
+(B4); bounds not counted, per Task 1).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Quantity & Value \\
+\midrule
+Variables $n$ & $360$ ($325$ of $y_{kl}$, $10$ of $t_l$; $60$ fixed to $0$) \\
+Constraint rows $m$ & $95$ \\
+$z_{LP}$ & $5.209695$ \\
+Solver & \texttt{scipy.optimize.linprog(method="highs")} \\
+Time & $0.0026\,\text{s}$ \\
+Fractional $y_{kl}$ ($0<y_{kl}<1$) & $19$, spanning $9$ of the $35$ VMs \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The optimal vertex is not unique in general, so the exact fractional set can depend on
+the solver and even on the exact solver version; $z_{LP}$ does not. The 9 split VMs are
+$k\in\{0,13,14,18,19,23,25,29,31\}$: eight are split across exactly \emph{two} servers (e.g.\ VM
+0: $0.5375$ on server 0, $0.4625$ on server 6), and one (VM 23) is split across \emph{three}
+servers ($0.3066$, $0.0625$, $0.6309$ on servers $3$, $4$, $6$). Full list in
+\texttt{results/table1\_fractional.csv}.
+
+\section{Table 2 --- optimality conditions (a)--(e)}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Condition & Value & Satisfied ($\le10^{-6}$) \\
+\midrule
+(a) primal feasibility, max violation & $8.9\times10^{-16}$ & yes \\
+(b) dual feasibility (signs), max violation & $0$ & yes \\
+(c) complementary slackness, max $|\pi_i\cdot\text{slack}_i|$ & $1.1\times10^{-16}$ & yes \\
+(d) reduced costs, max violation & $8.8\times10^{-17}$ & yes \\
+(e) strong duality, $|$gap$|$ & $8.9\times10^{-16}$ & yes \\
+\midrule
+\textbf{All five satisfied} & & \textbf{yes} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Table 3 --- sensitivity of the designated constraint}
+
+Designated row (Task 4): (B1) for $k^\ast{=}13$, the VM with the largest CPU request
+($\text{cpu\_req}[13]{=}8$): $\sum_l y_{13,l}=1$, $b_0=1$.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Quantity & Value \\
+\midrule
+$z(b_0-0.01)$ & $5.205338$ \\
+$z(b_0)$ & $5.209695$ \\
+$z(b_0+0.01)$ & $5.214052$ \\
+Left slope & $0.435730$ \\
+Solver's dual price $\pi$ & $0.435730$ \\
+Right slope & $0.435730$ \\
+Interval check (left $\le\pi\le$ right) & passed \\
+Degenerate? & no \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{S1 --- The model and what it ignores}
+
+\begin{sloppypar}
+\textbf{Sets and parameters.} $k=0,\dots,M{-}1$ indexes VMs, $l=0,\dots,S{-}1$ indexes servers;
+$\text{cpu\_req}_k,\text{mem\_req}_k$ are VM $k$'s requirements; $C_l,R_l$ are server $l$'s
+capacity; $\text{zone}_l,\text{vm\_required\_zone}_k$ give the zone restriction ($-1$: none).
+\textbf{Variables.} $y_{kl}\in\{0,1\}$: VM $k$ runs on server $l$; $t_l\ge0$: server $l$'s
+latency. \textbf{Objective.} $\min\sum_l t_l$ --- total latency, not cost or server count.
+\textbf{Constraints.} (B1) every VM placed on exactly one server; (B2)/(B3) a server's total
+CPU/memory demand cannot exceed its capacity; (B4) $t_l$ is at least every one of 4 tangent lines
+of the convex $g(u)=u/(1-u)$ (an M/M/1-style latency model), so $t_l$ is a piecewise-linear lower
+envelope of the true nonlinear latency in CPU utilisation $u_l$. \textbf{Variant 2 (zones).} if VM
+$k$ needs a zone and server $l$ is in a different zone, $y_{kl}$ is forbidden; we keep that
+variable with $\text{ub}=0$ rather than deleting it, so the variable count matches the check value
+($360$, not $300$). \textbf{What it ignores} (Section 2's own list, applied to our variant): the
+true nonlinear M/M/1 latency is replaced by a 4-piece linear lower bound; there is no routing, no
+warehouse trip, no arrival order; memory and CPU are the only two resources modelled; and the
+model is static --- it places every VM once, with no migration cost.
+\end{sloppypar}
+
+\vspace{4pt}\noindent\textit{Signed: Tilesbay Yermukhamed}
+
+\section{S2 --- Value and fractionality of the LP}
+
+Solving the LP relaxation (Table 1) with \texttt{scipy.optimize.linprog(method="highs")} takes
+$2.6\,\text{ms}$ and gives $z_{LP}=5.209695$. Of the $325$ placement variables, $19$ are strictly
+fractional, touching $9$ of the $35$ VMs ($26\%$); the other $26$ VMs are placed wholly on one
+server, exactly as in an integer solution. The fractional VMs are not a uniform smear: eight split
+$2$-ways and one (VM $23$) splits $3$-ways, and in most cases one share dominates (e.g.\ VM $25$:
+$0.8125/0.1875$) rather than an even $1/n$ split --- the LP is pushing as much of each VM onto its
+cheapest-latency server as the two capacity rows allow, only using a second (or third) server for
+the residual that would otherwise tip that server's utilisation past a cheaper tangent segment of
+(B4). This is the behaviour Task 5 asks us to read: fractional placement is concentrated where
+(B4)'s piecewise-linearity, not raw capacity, is the binding force (S5, active-row table). The
+optimal vertex returned by \texttt{highs} is one of possibly several optima with the same
+$z_{LP}$ --- a different solver, or even a different solver version, could fractionalise a
+different subset of VMs without changing $z_{LP}=5.209695$.
+
+\vspace{4pt}\noindent\textit{Signed: Rakhima Noken}
+
+\section{S3 --- Is the solution optimal, and how do we know?}
+
+Before trusting any dual price we fixed our sign convention on a two-variable LP with a known
+answer: $\min x_1+x_2$ s.t.\ $x_1+x_2\ge1$, $0\le x\le1$, whose optimum is $z=1$ at, e.g.,
+$x=(1,0)$, with a unique dual price of $+1$ on the single ``$\ge$'' row. \texttt{src/lp} returns
+exactly $\pi=+1$ for that row, confirming our convention: $\pi_i\ge0$ for ``$\ge$'' rows,
+$\pi_i\le0$ for ``$\le$'' rows, free for ``$=$'' rows (\texttt{tests/test\_kkt.py},
+\texttt{test\_two\_variable\_sign\_convention\_sanity\_check}) --- the same convention Table 2 is
+built on. With that settled, Table 2 shows all five KKT conditions hold on our real B2 solution to
+at most $8.9\times10^{-16}$, many orders of magnitude inside the $10^{-6}$ tolerance: this is not
+``the solver said so,'' it is a self-contained numerical certificate --- primal feasibility, correct
+dual signs, complementary slackness on every one of the 95 rows, zero reduced cost on every
+strictly-fractional variable, and $c^\top x=b^\top\pi+\sum_j\min(0,r_j)$ exactly, which is strong
+duality closing the primal-dual gap to machine precision. \texttt{src/kkt/checker.py} is a plain
+\texttt{(c, A, b, sense, lb, ub, x, pi)} function with no dependency on how $x,\pi$ were produced,
+so it would equally certify another team's solver's output (as Task 3 requires).
+
+\vspace{4pt}\noindent\textit{Signed: Tamerlan Aitzhanov}
+
+\section{S4 --- What the dual price says about the storyline}
+
+The designated row is (B1) for VM $13$ --- the VM with the single largest CPU request
+($\text{cpu\_req}{=}8$) --- forced to be placed exactly once. Its dual price is
+$\pi=0.435730>0$, and Table 3's two finite-difference slopes agree with it to six decimals, so the
+row is not degenerate: this is a trustworthy, locally exact number, not an artifact of one vertex.
+Because the row is an equality, $\pi$ is free in sign, and a positive value says relaxing it
+upward (as if VM 13 needed to be ``placed'' $1+\varepsilon$ times, e.g.\ requiring a hot spare)
+would raise total latency by about $0.436$ per unit of $\varepsilon$ --- our single biggest VM is
+genuinely expensive to accommodate, because wherever it lands it pushes that server's utilisation
+measurably up the convex (B4) curve. In storyline terms: $\pi_{13}$ is the marginal latency cost
+of over-provisioning placement for the heaviest VM in the fleet, and its sign (positive, not zero
+or negative) tells us this VM is never a ``free rider'' sitting in a mostly-empty server --- every
+server it could be placed on is already latency-sensitive at the margin. A $\pi$ of exactly $0$
+would instead mean some server has so much CPU headroom left that an extra unit of this
+requirement costs nothing; we do not see that here.
+
+\vspace{4pt}\noindent\textit{Signed: Danial Kabdulla}
+
+\section{S5 --- The bound and the bridge to Checkpoint 4}
+
+\textbf{$z_{LP}\le z^\ast$ in four lines.} Every integer-feasible $y\in\{0,1\}^n$ (with the
+box-bound $0\le t$) satisfies $0\le y\le1$ as well, so it is also feasible for the LP relaxation;
+the LP's feasible set is therefore a superset of the integer-feasible set, over the \emph{same}
+objective $\sum_l t_l$. Minimizing a fixed function over a larger set can only give a value less
+than or equal to minimizing it over a subset, so $z_{LP}=\min_{\text{LP-feas.}}\le
+\min_{\text{int-feas.}}=z^\ast$. \textbf{What the gap measures.} For a feasible integer $z$
+(e.g.\ a Checkpoint-4 heuristic's output), $(z-z_{LP})/z$ measures how far \emph{that particular
+solution} is from the LP's lower bound --- a practical, computable proxy for ``how close to optimal
+is this,'' since the true $z^\ast$ is unknown in Checkpoint 4. \textbf{What it does not tell you}:
+whether $z$ is itself optimal (a large gap could mean a weak heuristic \emph{or} a loose LP bound,
+and this number alone cannot distinguish the two causes) or how loose $z_{LP}$ is relative to
+$z^\ast$ specifically.
+
+\textbf{Active rows per family.}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Family & Active & Total & \% active \\
+\midrule
+B1 (placement, $=$) & $35$ & $35$ & $100\%$ \\
+B2 (CPU capacity) & $0$ & $10$ & $0\%$ \\
+B3 (memory capacity) & $1$ & $10$ & $10\%$ \\
+B4 (latency, piecewise-linear) & $19$ & $40$ & $48\%$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+B1 is trivially always tight (an equality). The real story is B2 vs.\ B4: not a single CPU-capacity
+row binds, and only one memory row does, but nearly half of the 40 latency tangent constraints are
+active --- \textbf{the piecewise-linear latency family (B4), not raw CPU/memory capacity, drives
+the cost}, consistent with S4's reading of $\pi_{13}$.
+
+\textbf{Prediction for Checkpoint 4.} With $19$ of $325$ placement variables ($9$ of $35$ VMs)
+fractional at the LP optimum, and one of those split three ways rather than cleanly rounding, we
+predict the LP bound will \emph{not} be perfectly tight: rounding these fractional VMs to integers
+will push some server past a cheaper (B4) tangent segment, costing some latency above $z_{LP}$, so
+we expect a modest but nonzero gap $(z^\ast-z_{LP})/z^\ast$ once Checkpoint 4 finds $z^\ast$ (or a
+heuristic $z$) exactly.
+
+\vspace{4pt}\noindent\textit{Signed: Zere Zhussupbekova}
+
+\section{Synthesis}
+
+\textbf{What the LP tells us about this instance.} Capacity is abundant (B2: $0/10$ active, B3:
+only $1/10$) but latency is not: B4's $48\%$ activity rate and $\pi_{13}=0.436>0$ on our single
+largest VM both point the same way --- this instance is \emph{latency-bound}, not
+\emph{resource-bound}. A capacity-only view of this fleet (``do the servers have room?'') would
+wrongly conclude the placement problem is nearly slack; it is the convex latency penalty, not
+headroom, doing almost all of the constraining. The $9$ fractional VMs at the LP optimum are
+concentrated, not spread evenly, which (S5) predicts a real but modest integrality gap rather than
+either a perfectly tight or wildly loose bound.
+
+\textbf{Modelling assumptions where the handout left a gap.} (1) We chose \texttt{scipy}'s
+\texttt{highs} LP solver over PuLP/CBC, exactly as Section 4's ``any LP solver'' permits; this
+sidesteps the \texttt{pulp<4} pinning requirement but means our exact fractional vertex (not
+$z_{LP}$) is solver- and even solver-version-dependent, as noted in S2. (2) For Task 4 we
+perturbed the right-hand side of (B1) at $k^\ast=13$ by $\pm0.01$ while re-solving the full LP
+from scratch (not a basis-only re-optimization), which is exact but does not by itself certify how
+far the interval of validity around $b_0=1$ extends --- we only checked the two adjacent points,
+consistent with what Task 4 asks for. (3) We kept forbidden (zone-mismatched) variables in the
+model with upper bound $0$ rather than deleting them, per the handout's explicit instruction,
+which costs nothing numerically but means $18\%$ of our $360$ columns ($60/360$) are structurally
+dead weight by construction. \textbf{What we would not trust from Checkpoint 1 any more:} any
+latency number from Checkpoint 1's exact nonlinear M/M/1 model, since (B4) is only a 4-segment
+lower envelope of it --- our $z_{LP}$ is a bound on a \emph{simplified} objective, and the true
+nonlinear latency at the same placement would be at least as large as what we report here.
+
+\clearpage
+\appendix
+\section*{Appendix: hand tasks H1--H5}
+\textbf{A note before these pages.} The five sections below are typed summaries of the reference
+derivations (full detail in \texttt{T12\_HandSolutions\_CP3.pdf}); each member's own signed,
+worked-by-hand page is photographed/scanned and kept in \texttt{hand/} in the repository (not
+pasted into this PDF), exactly as for Checkpoint 2. The typed summaries and the scans agree; the
+scan in \texttt{hand/} is the version of record for I3.
+
+\subsection*{H1 --- Tilesbay Yermukhamed --- signed}
+Matrix form: $c=(5,5,6)^\top$, $A=\begin{pmatrix}1&1&0\\0&1&1\\1&0&1\end{pmatrix}$,
+$b=(1,1,1)^\top$, s.t.\ $Ay\ge b$, $0\le y\le1$: $3$ variables, $3$ rows. Rewriting as ``$\le$''
+rows multiplies every row by $-1$; every dual price flips sign (a ``$\ge$''-row price $\pi_i\ge0$
+becomes a ``$\le$''-row price $-\pi_i\le0$ for the same constraint). All $8$ binary points
+checked against the $3$ covering rows; $4$ are feasible (every point with at least two $y_j=1$),
+cheapest is $(1,1,0)$ with $z^\ast=\mathbf{10}$.
+
+\vspace{12pt}\noindent Signed: \textbf{Tilesbay Yermukhamed} --- see \texttt{hand/H1\_signed.pdf} in the repository.
+
+\subsection*{H2 --- Rakhima Noken --- signed}
+$y=(1/2,1/2,1/2)$: every row $1/2+1/2=1\ge1$ (tight), $0\le1/2\le1$ --- feasible, cost
+$=5(1/2)+5(1/2)+6(1/2)=\mathbf{8}$. Round down $(0,0,0)$: infeasible (every row fails). Round up
+$(1,1,1)$: feasible, cost $16$. $z^\ast=10$ (H1), and solving the LP confirms $(1/2,1/2,1/2)$ is
+exactly the LP optimum, $z_{LP}=8$; gap $(10-8)/10=\mathbf{0.2}$ ($20\%$). No integral point can be
+LP-optimal: every integer point costs $\ge10>8=z_{LP}$, and the LP optimum is the unique fractional
+point $(1/2,1/2,1/2)$, strictly cheaper than any point in $\{0,1\}^3$.
+
+\vspace{12pt}\noindent Signed: \textbf{Rakhima Noken} --- see \texttt{hand/H2\_signed.pdf} in the repository.
+
+\subsection*{H3 --- Tamerlan Aitzhanov --- signed}
+At $x=(0.5,0.5,0.5)$, $\pi=(2,3,3)$: all five conditions (a)--(e) hold to $0$ exactly --- a
+genuine, certified optimal primal-dual pair. With $\pi'=(3,2,2)$: (a)--(c) are unaffected (they do
+not depend on which $\pi$ we test), but reduced cost $r_3'=6-(3\cdot0+2\cdot1+2\cdot1)=2\ne0$
+--- condition (d) \textbf{fails by $2$} --- and strong duality gives $b^\top\pi'=7\ne8=c^\top x$
+--- condition (e) \textbf{fails by $1$}. $\pi'$ is still sign-feasible, so by weak duality
+$b^\top\pi'+\sum\min(0,r_j')=7$ remains a valid lower bound on $z_{LP}=8$, just $\mathbf{1}$ short
+of the tight bound achieved by the true dual.
+
+\vspace{12pt}\noindent Signed: \textbf{Tamerlan Aitzhanov} --- see \texttt{hand/H3\_2Tamerlan.pdf} in the repository.
+
+\subsection*{H4 --- Danial Kabdulla --- signed}
+Raising (T1)'s RHS to $1+\varepsilon$ with all three rows kept tight gives
+$y_1=y_2=0.5+\varepsilon/2$, $y_3=0.5-\varepsilon/2$, and cost
+$z(1+\varepsilon)=8+2\varepsilon$: slope $2$, exactly $\pi_1=2$ from the task file. Valid for
+$-1\le\varepsilon\le1$ (from $0\le y\le1$); at $\varepsilon=\pm1$ a variable hits its bound and the
+slope could change beyond that point. If (T1) means ``the first customer must be covered,''
+$\pi_1=2$ says tightening or relaxing that coverage requirement by one unit changes the team's
+optimal cost by exactly $2$ per unit, in the valid range.
+
+\vspace{12pt}\noindent Signed: \textbf{Danial Kabdulla} --- see \texttt{hand/H4\_Sens\_Kabdulla\_Danial.pdf} in the repository.
+
+\subsection*{H5 --- Zere Zhussupbekova --- signed}
+$z_{LP}\le z^\ast$ in three lines: every integer-feasible $y\in\{0,1\}^3$ also satisfies
+$0\le y\le1$, so it is LP-feasible too; minimizing the same cost over the larger LP-feasible set
+can only give a value $\le$ the minimum over the smaller integer-feasible subset, so $z_{LP}\le
+z^\ast$. Three gaps, using $z_{LP}=8$: true optimum $(1,1,0)$, $z^\ast=10$,
+$(10-8)/10=\mathbf{0.2}$; feasible point $(1,0,1)$, cost $11$, $(11-8)/11\approx\mathbf{0.273}$;
+rounded-up point $(1,1,1)$, cost $16$, $(16-8)/16=\mathbf{0.5}$. The first (using $z^\ast$)
+measures the intrinsic quality of the LP bound itself; the other two (using a merely-feasible $z$)
+measure the quality of \emph{that specific solution} --- exactly the distinction Checkpoint 4 will
+need, where $z^\ast$ is unknown and only $z_{LP}$ and a heuristic's $z$ are available.
+
+\vspace{12pt}\noindent Signed: \textbf{Zere Zhussupbekova} --- see \texttt{hand/H5\_Zhussupbekova\_Zere\_2.pdf} in the repository.
+
+\clearpage
+\section*{Contribution statement}
+\textit{To be reviewed and signed by all five members before submission; if it disagrees with the
+Git history, the Git history decides.}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.9cm}c>{\raggedright\arraybackslash}p{7.6cm}c@{}}
+\toprule
+Member & Role & What they did & Share \\
+\midrule
+Tilesbay Yermukhamed & M1 & \texttt{src/model/}: data loading, matrix-form build, row/column
+bookkeeping; H1; S1 & $19\%$ \\
+Rakhima Noken & M2 & \texttt{src/lp/}: LP solving, reading the solution, Table 1; H2; S2 & $19\%$ \\
+Tamerlan Aitzhanov & M3 & \texttt{src/kkt/}: conditions (a)--(e) checker, sign-convention sanity
+test, Table 2; H3; S3 & $19\%$ \\
+Danial Kabdulla & M4 & \texttt{src/sens/}: perturbation runs, interval check, Table 3; H4; S4 &
+$19\%$ \\
+Zere Zhussupbekova & M5 & \texttt{experiments/run\_all.py}, \texttt{src/bound.py}, assembling all
+tables, hand-solutions reference and this PDF; H5; S5; Synthesis & $24\%$ \\
+\midrule
+\textbf{Total} & & & $\mathbf{100\%}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{18pt}
+\noindent Signatures:\\[10pt]
+\noindent Tilesbay Yermukhamed: \makebox[4.2cm]{\hrulefill}\\[16pt]
+\noindent Rakhima Noken: \makebox[4.2cm]{\hrulefill}\\[16pt]
+\noindent Tamerlan Aitzhanov: \makebox[4.2cm]{\hrulefill}\\[16pt]
+\noindent Danial Kabdulla: \makebox[4.2cm]{\hrulefill}\\[16pt]
+\noindent Zere Zhussupbekova: \makebox[4.2cm]{\hrulefill}
+
+\end{document}
