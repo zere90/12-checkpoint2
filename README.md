@@ -127,3 +127,82 @@ All code was read, run and verified by the author before committing.
   `scipy.optimize.linprog(method="highs")`.)
 - L. Kleinrock, *Queueing Systems, Volume 1: Theory*, Wiley, 1975. (The M/M/1 waiting-time curve
   $g(u)=u/(1-u)$ that constraint (B4) piecewise-linearizes.)
+---
+
+# Checkpoint 4 (Your Own Metaheuristic on the Team's Instance)
+
+Same repo, same instance (`cp34_instance(12, 'B', 2)`, unchanged from Checkpoint 3). Tag for this
+checkpoint will be `checkpoint4`. **All individual this time** — no group part; each student
+submits their own `Surname_CP4.pdf` to Moodle, and copying code between different
+pairs/the solo member is explicitly forbidden (CP4 Instructions, Section 7).
+
+## Who does what (from the team's CP4 task file, final, not to be changed)
+
+| Student | Group | Configuration | Role | Partner |
+|---|---|---|---|---|
+| Aitzhanov Tamerlan | SA pair | SA, transfer+swap | SA-T | Yermukhamed Tilesbay |
+| Yermukhamed Tilesbay | SA pair | SA, transfer+swap | SA-I | Aitzhanov Tamerlan |
+| Zhussupbekova Zere | GA pair | GA, penalty | GA-A | Kabdulla Danial |
+| Kabdulla Danial | GA pair | GA, penalty | GA-P | Zhussupbekova Zere |
+| Noken Rakhima | single | SA, transfer | SA-solo | — |
+
+Reference values (team task file): $z_{LP} = 5.209695$ (matches Checkpoint 3 exactly), $z_{ref} =
+5.268322$ (instructor's exact optimum, for reporting only — never read by any `solve(...)`).
+
+## GA-A (Zere): how to run
+
+```
+pip install numpy matplotlib --break-system-packages   # or inside your venv, no flag needed there
+python3 check_env.py --instance-seed 12 --story B --variant 2     # confirm check values first
+
+# GA-A's own role test
+python3 tests/test_ga_a.py
+
+# the 10 final runs (seeds 0-9, budget 100000), once src/meta/ga_problem.py (GA-P) is real:
+python3 -m experiments.run_final --module src.meta.ga --instance-seed 12 --story B --variant 2 \
+    --team T12 --role GA-A --configuration "GA, penalty" --seeds 0-9 --budget 100000 \
+    --out results/Zhussupbekova_runs.csv
+
+# the random-search baseline (same budget/seeds, owned by GA-A):
+python3 -m experiments.run_final --module src.meta.random_search --instance-seed 12 --story B --variant 2 \
+    --team T12 --role GA-A --configuration random --seeds 0-9 --budget 100000 \
+    --out results/Zhussupbekova_runs.csv --append
+
+# GA-A's required analysis item: population diversity + effect of N on cost
+python3 -m experiments.run_popsize_diversity --instance-seed 12 --story B --variant 2 \
+    --N 15 30 --seeds 0-9 --budget 100000 --surname Zhussupbekova
+```
+
+`src/meta/ga.py` and `src/meta/random_search.py` were developed and unit-tested against a
+local, `.gitignore`d stub (`_dev_ga_problem_stub.py`) implementing the agreed GA-P interface
+(`random_individual`, `evaluate`, `crossover`, `mutate`), so the loop, elitism and exact-budget
+accounting are verified independently of Danial's real `src/meta/ga_problem.py`. The commands
+above will only reproduce real numbers once his file replaces the stub; re-run
+`tests/test_ga_a.py` and the final runs again at that point.
+
+## Repository layout (new for Checkpoint 4)
+
+```
+checkpoint4_generator_PUBLIC.py   shared instance generator + checkers evaluate_A/evaluate_B
+check_env.py                      confirms the check values of the task file
+src/meta/interface.py             the solve(...) signature + the checker wrapper (starter kit)
+src/meta/ga_problem.py            representation, random_individual, evaluate, crossover, mutate -- GA-P (Danial)
+src/meta/ga.py                    the GA loop: selection, elitism, generations, solve(...)        -- GA-A (Zere)
+src/meta/random_search.py         random-search baseline                                           -- GA-A (Zere)
+src/meta/sa.py                    SA with the configuration, solve(...)                             -- SA-I (Tilesbay)
+src/meta/nm.py, tuning.py         Nelder-Mead + the T0/Tend tuning experiment                       -- SA-T (Tamerlan)
+experiments/run_final.py          runs solve on seeds, writes the results file (starter kit)
+experiments/run_popsize_diversity.py  GA-A's diversity / N-size experiment
+tests/test_ga_a.py, test_ga_p.py, test_sa_i.py, test_sa_t.py, test_sa_solo.py   one per role
+results/<surname>_runs.csv, _exp.csv, _tuning.csv, _popsize.csv, _diversity.csv  per role/author
+```
+
+## Declarations (AI assistance / external code, Checkpoint 4 -- one table per author, Section 7)
+
+### Zhussupbekova Zere (GA-A)
+
+| Tool or source | Used for | Files or sections | What I checked myself |
+|---|---|---|---|
+| AI assistant (Claude) | Drafting `src/meta/ga.py` (GA loop, elitism, exact-budget accounting), `src/meta/random_search.py`, `tests/test_ga_a.py`, `experiments/run_popsize_diversity.py`, and the local dev-only stub used to test them before `ga_problem.py` existed | `src/meta/ga.py`, `src/meta/random_search.py`, `tests/test_ga_a.py`, `experiments/run_popsize_diversity.py` | Ran `tests/test_ga_a.py` myself (same-seed determinism, exact budget spent, elitism keeps the best individual, tournament never returns the worst entrant); cross-checked `ga.py`'s reported cost/feasible against the real checker (`evaluate_B`) via `src/meta/interface.check`; confirmed `run_popsize_diversity.py`'s reimplementation of one generation step gives byte-identical costs to `ga.solve()` for the same seed/N/budget; re-ran `check_env.py` against the team task file's check values |
+
+*(Each other author adds their own table above, for their own files only -- per Section 7, "undeclared reuse falls under the academic-integrity policy of the syllabus.")*
