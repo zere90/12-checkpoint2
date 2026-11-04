@@ -127,3 +127,23 @@ All code was read, run and verified by the author before committing.
   `scipy.optimize.linprog(method="highs")`.)
 - L. Kleinrock, *Queueing Systems, Volume 1: Theory*, Wiley, 1975. (The M/M/1 waiting-time curve
   $g(u)=u/(1-u)$ that constraint (B4) piecewise-linearizes.)
+
+
+  Checkpoint 4 (Own Metaheuristic)
+Team T12 · Storyline B, variant 2 (zones), seed 12 · tag checkpoint4
+
+Roles
+Member | Configuration | Role | Files
+Tilesbay | SA, transfer+swap | SA-I | src/meta/sa.py, tests/test_SA-I.py, experiments/analyze_SA-I.py, results/tilesbay_runs.csv
+Tamerlan | SA, transfer+swap | SA-T | src/meta/nm.py, experiments/tuning.py, random-search baseline
+
+SA-I design
+Moves: transfer (70%) and swap (30%). Zone rule: a VM goes only to servers of its required zone. Constraints: only feasible moves are accepted; a move that overloads CPU or memory is evaluated and rejected. T0 and Tend: rule of the course (random walk of 3000 proposals, charged to the budget), or params={"T0":..,"Tend":..}.
+
+How to run (Tilesbay)
+python check_env.py --instance-seed 12 --story B --variant 2
+python tests/test_SA-I.py
+python experiments/run_final.py --module src.meta.sa --instance-seed 12 --story B --variant 2 --team T12 --role SA-I --configuration "SA, transfer+swap" --out results/tilesbay_runs.csv
+python experiments/analyze_SA-I.py --runs results/tilesbay_runs.csv
+
+Declarations
