@@ -206,7 +206,49 @@ above will only reproduce real numbers once his file replaces the stub; re-run
 
 ## GA-P design (Danial)
 
-*(Danial: add your part here: representation, random_individual, evaluate/penalty formula, crossover, mutate, your three-rho experiment, commands.)*
+Kabdulla Danial implements the problem operators for T12 cloud B2. The GA-A loop in `src/meta/ga.py` calls the following functions in `src/meta/ga_problem.py`. All random choices use the NumPy generator passed by the caller. An assignment contains one integer server index per VM.
+
+| Function | Contract |
+| --- | --- |
+| `random_individual(d, variant, rng)` | Draw a server independently for each VM. A required zone restricts its choices to matching servers. A requirement of −1 allows every server. |
+| `evaluate(d, variant, individual)` | Return selection fitness, official checker cost and feasibility. The call to `interface.check` uses `evaluate_B` exactly once. |
+| `crossover(parent1, parent2, rng)` | At each VM independently, inherit its server from either parent with probability 0.5. Both parents respect that VM’s zone, so the child does too. |
+| `mutate(d, variant, individual, rng)` | Change one or two distinct VMs to a different server in their allowed sets. Preserve the parent. A VM with only one allowed server cannot move. |
+
+**Capacity penalty.** The operators permit overload. For server s, take the positive part of CPU load divided by CPU capacity minus one, and the positive part of memory load divided by memory capacity minus one. Sum both over servers to obtain V. Relative overload makes a 10% excess comparable across resources. Selection minimizes `fitness = cost + rho * V`. For example, CPU 6/4 and memory 10/8 give V = 0.75. The shared final run records the official checker’s cost and feasible flag.
+
+**Penalty experiment.** The prediction and selection rule are in `results/kabdulla_prediction.txt`. Only seeds 100–104 enter tuning. Each value of rho uses 100,000 evaluations per seed, N = 30 and crossover probability 0.9. The offspring denominator excludes the 30 initial individuals and free elite copies. Raw results and aggregates are in `results/kabdulla_exp.csv` and `results/kabdulla_exp_summary.csv`.
+
+| ρ | Feasible offspring | Mean feasible cost | Infeasible runs |
+| ---: | ---: | ---: | ---: |
+| 1 | 74.92% | 5.296684 | 0/5 |
+| 10 | 82.07% | 5.301752 | 0/5 |
+| 100 | 87.12% | 5.310238 | 0/5 |
+
+All weights tied on final feasibility. The preregistered mean-cost criterion selected **rho = 1** on the tuning seeds. The higher weight increased the feasible-offspring share by 12.20 percentage points and raised the mean final cost by 0.26%.
+
+**Pair data and worst-seed checks.** The GA-A solvers and the starter runner generated `results/Zhussupbekova_runs.csv` locally. Its ten GA rows and ten random-search rows supply Table 1 and the baseline. The same GA executions produced `results/kabdulla_ga_details.json` with the returned assignments, traces, diversity observations and a snapshot of both starter-runner rows for each seed. The analysis uses this snapshot if the shared GA-A CSV is absent. This preserves the original timings and allows GA-A to track the shared CSV separately. F1 uses the first recorded evaluation at which all ten runs have a feasible incumbent. Table 2 exhausts all single-VM transfers and unordered swaps between VMs on different servers, passes every candidate to the official checker and counts strictly lower cost. The final shortened generation includes its elite. The last full generation is recorded separately. `results/kabdulla_analysis.json` stores Table 1, the worst-seed data, the F1 series, and the move counts.
+
+**Reproduction.** Run these commands from the repository root with NumPy and Matplotlib installed. The example uses a fresh results directory to preserve the original measurements. The recorded run used Python 3.14.3, NumPy 2.4.3 and Matplotlib 3.10.8. Elapsed times depend on the machine and concurrent workers.
+
+```text
+python -m unittest tests.test_ga_p -v
+python tests/test_ga_a.py
+python -m experiments.ga_p_rho --out results/recheck/kabdulla_exp.csv
+python -m experiments.ga_p_collect --out-dir results/recheck --workers 5
+python -m experiments.ga_p_analysis --results results/recheck
+```
+
+To rebuild the tables and figure from the saved runs alone, use `python -m experiments.ga_p_analysis`. The starter runner commands in Zere’s section reproduce the pair CSV directly. The local collector invokes that same runner and observes its first and last populations without drawing extra random numbers. A fresh final run uses the frozen weight in `src/meta/ga_problem.py`.
+
+**GA-P declaration · Kabdulla Danial**
+
+| Tool or source | Used for | Files or sections | What you checked yourself |
+| --- | --- | --- | --- |
+| OpenAI Codex | Reviewed the existing operators and tests, adjusted experiment bookkeeping, ran the experiments, prepared diagnostics, and drafted the README and report. | GA-P code, results, README and report | Danial chose the pre-final prediction. Codex ran the tests and checker comparisons described above. |
+| Course generator, starter kit, instructions, guide and T12 task sheet | Instance, checker, run protocol, reference values and report definitions. | GA-P experiment, Tables 1–2 and F1 | The automated instance check matched 10 servers, 35 VMs, CPU 172/454 and memory 615/1680. Returned assignments were checked again. |
+| NumPy and Matplotlib | Seeded variation, numerical summaries and F1. | GA-P operators, role tests and analysis | Automated tests covered zone validity, repeatability, and a hand-computable overload of 0.75. |
+| Zere Zhussupbekova’s GA-A code in the same pair | Genetic search loop and random-search baseline. | Final runs and baseline | The original GA-A tests were run with the GA-P operators. Table 1 costs were compared with saved GA solutions and the checker. |
 
 ## SA-solo (Rakhima)
 
