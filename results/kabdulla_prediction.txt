@@ -1,0 +1,20 @@
+T12 / cloud B2 / GA-P
+Working prediction recorded before the penalty sweep and final runs.
+
+Increasing rho from 1 to 100 should make overload less attractive in a
+tournament, so a larger share of offspring should fit the servers. The
+effect may be small: CPU latency already discourages concentrated loads
+and the instance has spare aggregate capacity. The best feasible costs
+should be close across the three weights. A very large penalty can also
+remove parents whose children would have become feasible after mutation.
+
+Decision rule fixed before tuning: use rho=10 as the starting setting.
+Choose the weight with the fewest infeasible tuning runs, then the lowest
+mean feasible cost. Treat differences under 0.000001 as ties. Prefer 10
+among tied weights, otherwise the smaller of them. Freeze the choice
+before using seeds 0-9. Compare rho=1, 10 and 100 on seeds 100-104 with
+100000 evaluations, N=30 and crossover probability 0.9.
+
+Danial's prediction, confirmed before the final runs on seeds 0-9:
+“Больше допустимых потомков, но стоимость может почти не измениться”.
+In English: more feasible offspring, with little change in final cost.
