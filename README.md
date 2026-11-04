@@ -231,16 +231,3 @@ tests/test_SA-I.py, test_SA-T.py, test_ga_a.py, test_ga_p.py, test_sa_solo.py   
 results/tilesbay_*.csv/.png/.json, Zhussupbekova_*.csv, <surname>_exp.csv, <surname>_tuning.csv   per role/author
 ```
 
-## Declarations (AI assistance / external code, Checkpoint 4 -- one table per author, Section 7)
-
-### Zhussupbekova Zere (GA-A)
-
-| Tool or source | Used for | Files or sections | What I checked myself |
-|---|---|---|---|
-| AI assistant (Claude) | Drafting `src/meta/ga.py` (GA loop, elitism, exact-budget accounting), `src/meta/random_search.py`, `tests/test_ga_a.py`, `experiments/run_popsize_diversity.py`, and the local dev-only stub used to test them before `ga_problem.py` existed | `src/meta/ga.py`, `src/meta/random_search.py`, `tests/test_ga_a.py`, `experiments/run_popsize_diversity.py` | Ran `tests/test_ga_a.py` myself (same-seed determinism, exact budget spent, elitism keeps the best individual, tournament never returns the worst entrant); cross-checked `ga.py`'s reported cost/feasible against the real checker (`evaluate_B`) via `src/meta/interface.check`; confirmed `run_popsize_diversity.py`'s reimplementation of one generation step gives byte-identical costs to `ga.solve()` for the same seed/N/budget; re-ran `check_env.py` against the team task file's check values |
-
-### Yermukhamed Tilesbay (SA-I)
-
-*(Tilesbay: fill in your own declaration table here.)*
-
-*(Each other author adds their own table above, for their own files only -- per Section 7, "undeclared reuse falls under the academic-integrity policy of the syllabus.")*
