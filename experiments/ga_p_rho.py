@@ -28,6 +28,8 @@ def main():
     parser.add_argument("--rhos", type=float, nargs="+", default=[1.0, 10.0, 100.0])
     parser.add_argument("--seeds", type=int, nargs="+", default=list(range(100, 105)))
     parser.add_argument("--budget", type=int, default=100_000)
+    parser.add_argument("--initial-population", type=int,
+                        help="population size N; must match N in --params when both are given")
     parser.add_argument("--params", default="{}", help="JSON params for GA-A solve")
     parser.add_argument("--out", default="results/kabdulla_exp.csv")
     parser.add_argument("--overwrite", action="store_true")
@@ -45,6 +47,9 @@ def main():
         parser.error("--params must be a JSON object")
     if "rho" in params or "RHO" in params:
         parser.error("set rho through --rhos, not --params")
+    if args.initial_population is not None:
+        if params.setdefault("N", args.initial_population) != args.initial_population:
+            parser.error("--initial-population and N in --params disagree")
     try:
         ga = importlib.import_module(args.module)
     except ModuleNotFoundError as exc:
