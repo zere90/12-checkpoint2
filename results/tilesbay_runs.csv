@@ -1,0 +1,11 @@
+team,role,configuration,seed,budget,cost,evals,feasible,seconds,params
+T12,SA-I,"SA, transfer+swap",0,100000,5.268322084,100000,True,0.45,
+T12,SA-I,"SA, transfer+swap",1,100000,5.268322084,100000,True,0.43,
+T12,SA-I,"SA, transfer+swap",2,100000,5.268322084,100000,True,0.34,
+T12,SA-I,"SA, transfer+swap",3,100000,5.268322084,100000,True,0.30,
+T12,SA-I,"SA, transfer+swap",4,100000,5.268322084,100000,True,0.30,
+T12,SA-I,"SA, transfer+swap",5,100000,5.268322084,100000,True,0.29,
+T12,SA-I,"SA, transfer+swap",6,100000,5.268322084,100000,True,0.30,
+T12,SA-I,"SA, transfer+swap",7,100000,5.268322084,100000,True,0.31,
+T12,SA-I,"SA, transfer+swap",8,100000,5.268322084,100000,True,0.30,
+T12,SA-I,"SA, transfer+swap",9,100000,5.268322084,100000,True,0.32,
