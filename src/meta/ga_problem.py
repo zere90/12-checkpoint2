@@ -10,9 +10,9 @@ import numpy as np
 from .interface import check
 
 
-# A unit violation means one whole server-capacity of overload. This is a
-# starting value, not a claim of optimal tuning; compare it on seeds 100--104.
-RHO = 10.0
+# All three weights gave five feasible tuning runs. Rho=1 had the lowest
+# mean checker cost on seeds 100--104 (results/kabdulla_exp_summary.csv).
+RHO = 1.0
 
 
 def _validate_instance(d, variant):
