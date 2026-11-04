@@ -6,15 +6,17 @@ Guards exactly the four properties the CP4 role table requires for GA-A:
   3. elitism keeps the best individual;
   4. the tournament never returns the worst of its entrants.
 
-(1) and (2) are end-to-end checks of solve(). (3) and (4) are direct unit tests of
-ga.py's own internal mechanics (_elite_of / _advance_generation / _tournament), not just
-of the final output, so a broken elitism or tournament that happens to still produce a
-plausible-looking final answer would still be caught.
+(1) and (2) are end-to-end checks of solve(). (3) and (4) are direct unit
+tests of ga.py's own internal mechanics (_elite_of / _advance_generation /
+_tournament), not just of the final output, so a broken elitism or
+tournament that happens to still produce a plausible-looking final answer
+would still be caught.
 
-These tests exercise src.meta.ga_problem -- GA-P's (Kabdulla Danial's) file -- through
-the real agreed interface (random_individual, evaluate, crossover, mutate); nothing here
-hard-codes the current contents of that file, so it will keep working once his real
-implementation replaces whatever stub it starts from.
+These tests exercise src.meta.ga_problem -- GA-P's (Kabdulla Danial's)
+file -- through the real agreed interface (random_individual, evaluate,
+crossover, mutate). Nothing here hard-codes the current contents of that
+file, so it will keep working once his real implementation replaces
+whatever stub it starts from.
 """
 import os
 import sys
@@ -58,13 +60,17 @@ def test_reported_result_matches_the_real_checker():
 
 
 def test_elitism_keeps_the_best_individual():
-    """Build a small fake population with known, controlled fitness values (not drawn
-    from random_individual), run one real generation step, and check that the single
-    best (lowest-fitness) row of the OLD population reappears, completely unchanged, as
-    the first entry of the NEW population -- this is elitism, tested directly rather
-    than inferred from a final cost number."""
+    """Elitism, tested directly rather than inferred from a final cost number.
+
+    Build a small fake population with known, controlled fitness values
+    (not drawn from random_individual), run one real generation step, and
+    check that the single best (lowest-fitness) row of the OLD population
+    reappears, completely unchanged, as the first entry of the NEW
+    population.
+    """
     rng = np.random.default_rng(123)
-    # build individuals through the real interface so crossover/mutate get valid input
+    # Build individuals through the real interface so crossover/mutate get
+    # valid input.
     import src.meta.ga as ga_mod
 
     pop = []
@@ -84,9 +90,12 @@ def test_elitism_keeps_the_best_individual():
 
 
 class _ScriptedRNG:
-    """A fake rng whose .integers(0, n, size=2) replays a fixed list of (i, j) pairs, so
-    the test can force every possible draw (including i == j, the 'both entrants are the
-    same individual' case) instead of hoping enough random draws happen to cover it."""
+    """A fake rng that replays a fixed list of (i, j) pairs from .integers(0, n, size=2).
+
+    This lets a test force every possible draw (including i == j, the
+    "both entrants are the same individual" case) instead of hoping
+    enough random draws happen to cover it.
+    """
 
     def __init__(self, pairs):
         self._pairs = list(pairs)
@@ -99,10 +108,13 @@ class _ScriptedRNG:
 
 
 def test_tournament_never_returns_the_worst_entrant():
-    """Direct check of _tournament with every possible (i, j) draw out of a 2-individual
-    population forced explicitly: (0,1), (1,0) must each return the strictly-better
-    entrant; (0,0), (1,1) (the same individual drawn twice) must return that individual,
-    which is correct since neither entrant in that draw is 'worse' than the other."""
+    """Direct check of _tournament with every possible (i, j) draw forced explicitly.
+
+    Out of a 2-individual population: (0, 1) and (1, 0) must each return
+    the strictly-better entrant; (0, 0) and (1, 1) (the same individual
+    drawn twice) must return that individual, which is correct since
+    neither entrant in that draw is "worse" than the other.
+    """
     good = (1.0, 1.0, True, np.array([0]))
     bad = (99.0, 99.0, False, np.array([1]))
     pop = [good, bad]
@@ -117,7 +129,7 @@ def test_tournament_never_returns_the_worst_entrant():
         winner = _tournament(pop, rng_same)
         assert winner is bad[3], "when both entrants are identical, that individual must be returned"
 
-    # tie: whichever is returned, neither is "the worst" since both are equally good
+    # Tie: whichever is returned, neither is "the worst" since both are equally good.
     tie_a = (5.0, 5.0, True, np.array([10]))
     tie_b = (5.0, 5.0, True, np.array([11]))
     pop_tie = [tie_a, tie_b]

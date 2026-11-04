@@ -1,24 +1,26 @@
 """src/meta/ga.py -- GA-A (Zere Zhussupbekova): the genetic-algorithm loop.
 
-Owns: tournament selection, elitism, generations, exact-budget accounting, solve(...),
-the 10 final runs (experiments/run_final.py, already in the starter kit) and the
-random-search baseline (src/meta/random_search.py).
+Owns: tournament selection, elitism, generations, exact-budget accounting,
+solve(...), the 10 final runs (experiments/run_final.py, already in the
+starter kit), and the random-search baseline (src/meta/random_search.py).
 
-Does NOT own: the representation, random_individual, evaluate (fitness/cost/feasible),
-crossover or mutate -- those are GA-P's (Kabdulla Danial's) src/meta/ga_problem.py,
-agreed between the two of us at the start (CP4 Instructions, Section 2) and imported
-here as `problem`.
+Does NOT own: the representation, random_individual, evaluate (fitness,
+cost, feasible), crossover, or mutate -- those are GA-P's (Kabdulla
+Danial's) src/meta/ga_problem.py, agreed between the two of us at the
+start (CP4 Instructions, Section 2) and imported here as `problem`.
 
-Configuration: "GA, penalty" (team T12 task file). Offspring may be infeasible; the
-fitness returned by problem.evaluate already contains the penalty term. This module
-only ever selects/compares individuals by fitness; the *reported* solution/cost/feasible
-of solve() always come from the real checker (via problem.evaluate's cost/feasible, which
-wrap evaluate_B), never from the fitness number itself.
+Configuration: "GA, penalty" (team T12 task file). Offspring may be
+infeasible; the fitness returned by problem.evaluate already contains
+the penalty term. This module only ever selects/compares individuals by
+fitness -- the *reported* solution/cost/feasible of solve() always come
+from the real checker (via problem.evaluate's cost/feasible, which wrap
+evaluate_B), never from the fitness number itself.
 
-Rule-of-thumb GA parameters (CP4 Instructions, Section 4): population size N=30,
-crossover probability p_c=0.9, mutation of 1 or 2 components per offspring (handled
-inside problem.mutate), tournament of size 2, elitism of 1 individual. Overridable via
-`params` for the N-size experiment (S5-equivalent required item of this role).
+Rule-of-thumb GA parameters (CP4 Instructions, Section 4): population
+size N=30, crossover probability p_c=0.9, mutation of 1 or 2 components
+per offspring (handled inside problem.mutate), tournament of size 2,
+elitism of 1 individual. All overridable via `params`, used for the
+population-size experiment (this role's required analysis item).
 """
 import math
 
@@ -27,48 +29,60 @@ import numpy as np
 from src.meta import ga_problem as problem
 
 DEFAULT_PARAMS = {
-    "N": 30,            # population size
-    "p_c": 0.9,          # crossover probability
+    "N": 30,  # population size
+    "p_c": 0.9,  # crossover probability
     "trace_every": 1000,  # at least every 1000 evaluations, per the interface spec
 }
 
 
 def _tournament(pop, rng):
-    """pop: list of (fitness, cost, feasible, individual). Returns the individual (array)
-    of the better (lower-fitness) of two uniformly drawn entrants; never the worse one."""
+    """Return the individual with the better (lower) fitness of two entrants.
+
+    pop: list of (fitness, cost, feasible, individual) rows. Draws two
+    indices uniformly at random and returns the winner's individual --
+    never the worse one, by construction.
+    """
     i, j = rng.integers(0, len(pop), size=2)
     a, b = pop[i], pop[j]
     return a[3] if a[0] <= b[0] else b[3]
 
 
 def _elite_of(pop):
-    """The single (fitness, cost, feasible, individual) row with the lowest fitness."""
+    """Return the single (fitness, cost, feasible, individual) row with the lowest fitness."""
     return min(pop, key=lambda t: t[0])
 
 
 def _make_offspring(d, variant, pop, rng, p_c):
-    """One not-yet-evaluated offspring: tournament x2 -> crossover (prob p_c) or an
-    unchanged copy of one parent -> mutate."""
+    """Produce one not-yet-evaluated offspring.
+
+    Two tournament winners -> crossover with probability p_c, otherwise an
+    unchanged copy of one parent -> mutate.
+    """
     parent1 = _tournament(pop, rng)
     parent2 = _tournament(pop, rng)
     if rng.random() < p_c:
         child = problem.crossover(parent1, parent2, rng)
     else:
-        # unchanged copy of a parent -- still costs one evaluation when it is scored
-        # (Section 3, "Evaluation" rule): we must not reuse a cached cost for it.
+        # An unchanged copy of a parent still costs one evaluation once it
+        # is scored below (Section 3, "Evaluation" rule) -- we must not
+        # reuse a cached cost for it.
         child = np.array(parent1, copy=True)
     return problem.mutate(d, variant, child, rng)
 
 
 def _advance_generation(d, variant, pop, rng, p_c, N, evals_allowed):
-    """One generation step: keeps the current elite unchanged and free of cost as
-    new_pop[0] (elitism of 1), then fills the rest of new_pop with up to N-1 freshly
-    evaluated offspring, cut short after `evals_allowed` evaluations.
+    """Run one generation step.
 
-    Returns (new_pop, evaluated) where `evaluated` is the list of (fitness, cost,
-    feasible, individual) rows that were actually scored this call (elitism's free
-    copy is not included), in the order they were produced -- each one is exactly
-    one evaluation."""
+    Keeps the current elite unchanged and free of cost as new_pop[0]
+    (elitism of 1), then fills the rest of new_pop with up to N - 1
+    freshly evaluated offspring, cut short after `evals_allowed`
+    evaluations.
+
+    Returns (new_pop, evaluated), where `evaluated` is the list of
+    (fitness, cost, feasible, individual) rows actually scored during this
+    call (elitism's free copy is not included), in the order they were
+    produced -- each one is exactly one evaluation.
+    """
     new_pop = [_elite_of(pop)]
     evaluated = []
     while len(new_pop) < N and len(evaluated) < evals_allowed:
@@ -81,11 +95,14 @@ def _advance_generation(d, variant, pop, rng, p_c, N, evals_allowed):
 
 
 def solve(d, variant, seed, budget, params=None, start=None):
-    """GA, penalty configuration. See module docstring and the CP4 interface spec for
-    the exact meaning of every field of the returned dict.
+    """GA, penalty configuration.
 
-    `start` is accepted per the interface but not used in Checkpoint 4 (every run starts
-    from its own random population, as required)."""
+    See the module docstring and the CP4 interface spec for the exact
+    meaning of every field of the returned dict.
+
+    `start` is accepted per the interface but not used in Checkpoint 4 --
+    every run starts from its own random population, as required.
+    """
     p = dict(DEFAULT_PARAMS)
     if params:
         p.update(params)
@@ -97,8 +114,8 @@ def solve(d, variant, seed, budget, params=None, start=None):
 
     evals = 0
     trace = []
-    best_feasible = None       # (cost, individual)
-    best_by_fitness = None     # (fitness, cost, feasible, individual)
+    best_feasible = None  # (cost, individual)
+    best_by_fitness = None  # (fitness, cost, feasible, individual)
 
     def record(ind, fitness, cost, feasible):
         nonlocal best_feasible, best_by_fitness
@@ -112,8 +129,8 @@ def solve(d, variant, seed, budget, params=None, start=None):
         if not trace or evals - trace[-1][0] >= trace_every or evals == budget:
             trace.append((evals, bf))
 
-    # --- initial population: every member counts as one evaluation (cut short if the
-    # budget is smaller than N) ---
+    # Initial population: every member counts as one evaluation (cut short
+    # if the budget is smaller than N).
     pop = []
     for _ in range(N):
         if evals >= budget:
@@ -125,7 +142,8 @@ def solve(d, variant, seed, budget, params=None, start=None):
         pop.append((fitness, cost, feasible, ind))
         maybe_trace()
 
-    # --- generations: elitism (free) + offspring (1 evaluation each), budget cut short ---
+    # Generations: elitism (free) + offspring (1 evaluation each); the
+    # last generation is cut short so evals lands exactly on budget.
     while evals < budget and pop:
         pop, evaluated = _advance_generation(d, variant, pop, rng, p_c, N, budget - evals)
         for fitness, cost, feasible, ind in evaluated:

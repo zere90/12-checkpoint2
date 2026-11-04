@@ -1,24 +1,26 @@
-"""experiments/run_popsize_diversity.py -- GA-A's own required analysis item (CP4 role
-table): population diversity against the generation, and the effect of the population
-size N (two values) on the final cost. Owned and authored by Zere Zhussupbekova (GA-A).
+"""experiments/run_popsize_diversity.py -- GA-A's own required analysis item.
 
-Re-uses ga.py's own internal generation step (_advance_generation) so the search
-behaviour is byte-for-byte identical to the real solve() -- this script only adds the
-extra bookkeeping (diversity per generation) that solve()'s fixed return format has no
-room for.
+CP4 role table item: population diversity against the generation, and
+the effect of the population size N (two values) on the final cost.
+Owned and authored by Zere Zhussupbekova (GA-A).
+
+Re-uses ga.py's own internal generation step (_advance_generation) so
+the search behaviour is byte-for-byte identical to the real solve() --
+this script only adds the extra bookkeeping (diversity per generation)
+that solve()'s fixed return format has no room for.
 
 Writes two files:
   results/<surname>_diversity.csv  (N, generation, evals_so_far, n_distinct)
-      one representative seed (--diversity-seed, default 0) run to completion for each
-      N in --N, logging the number of distinct individuals in the population at every
-      generation.
+      one representative seed (--diversity-seed, default 0) run to
+      completion for each N in --N, logging the number of distinct
+      individuals in the population at every generation.
   results/<surname>_popsize.csv    (N, seed, cost, evals, feasible)
-      every seed in --seeds, run to completion, for each N in --N -- the N-vs-final-cost
-      comparison.
+      every seed in --seeds, run to completion, for each N in --N -- the
+      N-vs-final-cost comparison.
 
 Usage (defaults match the final-run protocol: budget 100000, seeds 0-9):
-  python -m experiments.run_popsize_diversity --instance-seed 12 --story B --variant 2 \
-      --N 15 30 --seeds 0-9 --budget 100000 --surname Zhussupbekova
+  python -m experiments.run_popsize_diversity --instance-seed 12 --story B \
+      --variant 2 --N 15 30 --seeds 0-9 --budget 100000 --surname Zhussupbekova
 """
 import argparse
 import csv
@@ -41,13 +43,17 @@ def parse_seeds(text):
 
 
 def _n_distinct(pop):
+    """Number of distinct individuals currently in the population."""
     return len(set(tuple(int(x) for x in row[3]) for row in pop))
 
 
 def _solve_with_diversity(d, variant, seed, budget, N, p_c=0.9):
-    """Same search as src.meta.ga.solve (same RNG stream, same _advance_generation
-    calls), plus a (generation, evals_so_far, n_distinct) row recorded once per
-    generation, starting with generation 0 = the initial population."""
+    """Run the same search as src.meta.ga.solve, with diversity bookkeeping added.
+
+    Same RNG stream and the same _advance_generation calls as solve(),
+    plus a (generation, evals_so_far, n_distinct) row recorded once per
+    generation, starting with generation 0 = the initial population.
+    """
     rng = np.random.default_rng(seed)
     problem = ga_mod.problem
     evals = 0
@@ -82,18 +88,28 @@ def _solve_with_diversity(d, variant, seed, budget, N, p_c=0.9):
     return cost, evals, feasible, diversity_rows
 
 
-def main():
+def _build_arg_parser():
     ap = argparse.ArgumentParser()
     ap.add_argument("--instance-seed", type=int, required=True)
     ap.add_argument("--story", required=True, choices=["A", "B"])
     ap.add_argument("--variant", type=int, required=True, choices=[1, 2, 3])
     ap.add_argument("--cap", type=int, default=None)
-    ap.add_argument("--N", type=int, nargs=2, required=True, help="exactly two population sizes to compare")
+    ap.add_argument(
+        "--N", type=int, nargs=2, required=True,
+        help="exactly two population sizes to compare",
+    )
     ap.add_argument("--seeds", default="0-9")
     ap.add_argument("--budget", type=int, default=100000)
-    ap.add_argument("--diversity-seed", type=int, default=0, help="which seed's run to log per-generation diversity for")
+    ap.add_argument(
+        "--diversity-seed", type=int, default=0,
+        help="which seed's run to log per-generation diversity for",
+    )
     ap.add_argument("--surname", required=True)
-    a = ap.parse_args()
+    return ap
+
+
+def main():
+    a = _build_arg_parser().parse_args()
 
     d = gen.cp34_instance(a.instance_seed, a.story, a.variant, cap=a.cap)
     seeds = parse_seeds(a.seeds)

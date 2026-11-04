@@ -6,3 +6,6 @@ __pycache__/
 *.out
 *.toc
 _dev_ga_problem_stub.py
+.idea/
+*.iml
+.DS_Store

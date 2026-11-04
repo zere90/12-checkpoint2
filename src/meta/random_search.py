@@ -1,15 +1,18 @@
 """src/meta/random_search.py -- GA-A (Zere Zhussupbekova): the random-search baseline.
 
-Owned by GA-A per the CP4 role table ("the 10 final runs ...; the random-search baseline").
-Same solve(...) interface as src/meta/ga.py and the same budget/seed protocol, so that
-Question 6 of the analysis ("better than random search? how far from the bound?") is a fair,
-apples-to-apples comparison: both draw candidates with problem.random_individual and measure
-them with problem.evaluate / the real checker, nothing else differs.
+Owned by GA-A per the CP4 role table ("the 10 final runs ...; the
+random-search baseline"). Same solve(...) interface as src/meta/ga.py and
+the same budget/seed protocol, so that Question 6 of the analysis
+("better than random search? how far from the bound?") is a fair,
+apples-to-apples comparison: both draw candidates with
+problem.random_individual and measure them with problem.evaluate / the
+real checker, nothing else differs.
 
-One evaluation = one freshly drawn random candidate; the starting candidate counts too
-(Section 3, "Evaluation"); evals always equals budget exactly, cut short on the last one
-if needed (not applicable here since every evaluation is independent, but kept for symmetry
-with ga.py and in case budget is 0).
+One evaluation = one freshly drawn random candidate; the starting
+candidate counts too (Section 3, "Evaluation"). evals always equals
+budget exactly -- cut short on the last one if needed (not applicable
+here, since every evaluation is independent, but kept for symmetry with
+ga.py and in case budget is 0).
 """
 import math
 
@@ -25,7 +28,8 @@ DEFAULT_PARAMS = {
 def solve(d, variant, seed, budget, params=None, start=None):
     """Draw `budget` independent random individuals and report the best feasible one.
 
-    `start` is accepted per the interface but not used in Checkpoint 4."""
+    `start` is accepted per the interface but not used in Checkpoint 4.
+    """
     p = dict(DEFAULT_PARAMS)
     if params:
         p.update(params)
@@ -35,8 +39,8 @@ def solve(d, variant, seed, budget, params=None, start=None):
 
     evals = 0
     trace = []
-    best_feasible = None       # (cost, individual)
-    best_by_fitness = None     # (fitness, cost, feasible, individual)
+    best_feasible = None  # (cost, individual)
+    best_by_fitness = None  # (fitness, cost, feasible, individual)
 
     def maybe_trace():
         bf = best_feasible[0] if best_feasible is not None else math.inf
