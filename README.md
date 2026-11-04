@@ -127,6 +127,7 @@ All code was read, run and verified by the author before committing.
   `scipy.optimize.linprog(method="highs")`.)
 - L. Kleinrock, *Queueing Systems, Volume 1: Theory*, Wiley, 1975. (The M/M/1 waiting-time curve
   $g(u)=u/(1-u)$ that constraint (B4) piecewise-linearizes.)
+
 ---
 
 # Checkpoint 4 (Your Own Metaheuristic on the Team's Instance)
@@ -138,16 +139,39 @@ pairs/the solo member is explicitly forbidden (CP4 Instructions, Section 7).
 
 ## Who does what (from the team's CP4 task file, final, not to be changed)
 
-| Student | Group | Configuration | Role | Partner |
-|---|---|---|---|---|
-| Aitzhanov Tamerlan | SA pair | SA, transfer+swap | SA-T | Yermukhamed Tilesbay |
-| Yermukhamed Tilesbay | SA pair | SA, transfer+swap | SA-I | Aitzhanov Tamerlan |
-| Zhussupbekova Zere | GA pair | GA, penalty | GA-A | Kabdulla Danial |
-| Kabdulla Danial | GA pair | GA, penalty | GA-P | Zhussupbekova Zere |
-| Noken Rakhima | single | SA, transfer | SA-solo | — |
+| Student | GitHub | Group | Configuration | Role | Partner |
+|---|---|---|---|---|---|
+| Yermukhamed Tilesbay | [@etilesbay-stack](https://github.com/etilesbay-stack) | SA pair | SA, transfer+swap | SA-I | Aitzhanov Tamerlan |
+| Aitzhanov Tamerlan | [@Tabix01](https://github.com/Tabix01) | SA pair | SA, transfer+swap | SA-T | Yermukhamed Tilesbay |
+| Zhussupbekova Zere | [@zere90](https://github.com/zere90) | GA pair | GA, penalty | GA-A | Kabdulla Danial |
+| Kabdulla Danial | [@Haigatu](https://github.com/Haigatu) | GA pair | GA, penalty | GA-P | Zhussupbekova Zere |
+| Noken Rakhima | [@queenbikeshhh](https://github.com/queenbikeshhh) | single | SA, transfer | SA-solo | — |
 
 Reference values (team task file): $z_{LP} = 5.209695$ (matches Checkpoint 3 exactly), $z_{ref} =
 5.268322$ (instructor's exact optimum, for reporting only — never read by any `solve(...)`).
+
+## SA-I design (Tilesbay)
+
+- State: `assign`, the server of each VM. Cost: sum over servers of the piecewise-linear latency of the CPU utilisation, updated incrementally (only the two servers touched by a move).
+- Moves: transfer (70%) and swap (30%). Zone rule (B2): a VM may only go to a server of its required zone; moves that break it are never generated.
+- Constraints: only feasible moves are accepted. A move that overloads CPU or memory is evaluated (it costs one evaluation) and rejected.
+- Temperatures: rule of the course (random walk of 3000 proposals accepting everything feasible, T0 = 4.5 · median of positive deltas, Tend = 0.22 · 5th percentile; the walk is charged to the budget), or `params={"T0": ..., "Tend": ...}` from SA-T. Geometric cooling.
+- Budget: 100 000 evaluations per run, start solution and every proposal counted, seeds 0-9.
+
+### How to run (SA-I)
+
+```
+python check_env.py --instance-seed 12 --story B --variant 2
+python tests/test_SA-I.py
+python experiments/run_final.py --module src.meta.sa --instance-seed 12 --story B --variant 2 --team T12 --role SA-I --configuration "SA, transfer+swap" --out results/tilesbay_runs.csv
+python experiments/analyze_SA-I.py --runs results/tilesbay_runs.csv
+```
+
+`analyze_SA-I.py` reruns the ten seeds (deterministic), checks them against the results file and writes Table 1, Table 2, Figure F1 and the acceptance-vs-temperature curve. With tuned temperatures from SA-T add `--params '{"T0": ..., "Tend": ...}'` to both commands. Each test file also runs standalone with `python tests/test_SA-I.py`.
+
+## SA-T design (Tamerlan)
+
+*(Tamerlan: add your part here: Nelder-Mead, tuning experiment, random-search baseline, commands.)*
 
 ## GA-A (Zere): how to run
 
@@ -180,21 +204,31 @@ accounting are verified independently of Danial's real `src/meta/ga_problem.py`.
 above will only reproduce real numbers once his file replaces the stub; re-run
 `tests/test_ga_a.py` and the final runs again at that point.
 
+## GA-P design (Danial)
+
+*(Danial: add your part here: representation, random_individual, evaluate/penalty formula, crossover, mutate, your three-rho experiment, commands.)*
+
+## SA-solo (Rakhima)
+
+*(Rakhima: add your part here: your sa.py design, the manual tuning grid, commands.)*
+
 ## Repository layout (new for Checkpoint 4)
 
 ```
 checkpoint4_generator_PUBLIC.py   shared instance generator + checkers evaluate_A/evaluate_B
 check_env.py                      confirms the check values of the task file
 src/meta/interface.py             the solve(...) signature + the checker wrapper (starter kit)
-src/meta/ga_problem.py            representation, random_individual, evaluate, crossover, mutate -- GA-P (Danial)
-src/meta/ga.py                    the GA loop: selection, elitism, generations, solve(...)        -- GA-A (Zere)
-src/meta/random_search.py         random-search baseline                                           -- GA-A (Zere)
-src/meta/sa.py                    SA with the configuration, solve(...)                             -- SA-I (Tilesbay)
-src/meta/nm.py, tuning.py         Nelder-Mead + the T0/Tend tuning experiment                       -- SA-T (Tamerlan)
+src/meta/sa.py                    solve(), State, moves                                            -- SA-I (Tilesbay)
+src/meta/nm.py                    Nelder-Mead from scratch                                          -- SA-T (Tamerlan)
+src/meta/ga_problem.py            representation, random_individual, evaluate, crossover, mutate    -- GA-P (Danial)
+src/meta/ga.py                    the GA loop: selection, elitism, generations, solve(...)          -- GA-A (Zere)
+src/meta/random_search.py         random-search baseline (GA pair)                                  -- GA-A (Zere)
 experiments/run_final.py          runs solve on seeds, writes the results file (starter kit)
-experiments/run_popsize_diversity.py  GA-A's diversity / N-size experiment
-tests/test_ga_a.py, test_ga_p.py, test_sa_i.py, test_sa_t.py, test_sa_solo.py   one per role
-results/<surname>_runs.csv, _exp.csv, _tuning.csv, _popsize.csv, _diversity.csv  per role/author
+experiments/analyze_SA-I.py       Table 1, Table 2, F1, acceptance curve                             -- SA-I (Tilesbay)
+experiments/tuning.py             T0/Tend tuning experiment                                          -- SA-T (Tamerlan)
+experiments/run_popsize_diversity.py  population-diversity / N-size experiment                       -- GA-A (Zere)
+tests/test_SA-I.py, test_SA-T.py, test_ga_a.py, test_ga_p.py, test_sa_solo.py   one per role
+results/tilesbay_*.csv/.png/.json, Zhussupbekova_*.csv, <surname>_exp.csv, <surname>_tuning.csv   per role/author
 ```
 
 ## Declarations (AI assistance / external code, Checkpoint 4 -- one table per author, Section 7)
@@ -204,5 +238,9 @@ results/<surname>_runs.csv, _exp.csv, _tuning.csv, _popsize.csv, _diversity.csv 
 | Tool or source | Used for | Files or sections | What I checked myself |
 |---|---|---|---|
 | AI assistant (Claude) | Drafting `src/meta/ga.py` (GA loop, elitism, exact-budget accounting), `src/meta/random_search.py`, `tests/test_ga_a.py`, `experiments/run_popsize_diversity.py`, and the local dev-only stub used to test them before `ga_problem.py` existed | `src/meta/ga.py`, `src/meta/random_search.py`, `tests/test_ga_a.py`, `experiments/run_popsize_diversity.py` | Ran `tests/test_ga_a.py` myself (same-seed determinism, exact budget spent, elitism keeps the best individual, tournament never returns the worst entrant); cross-checked `ga.py`'s reported cost/feasible against the real checker (`evaluate_B`) via `src/meta/interface.check`; confirmed `run_popsize_diversity.py`'s reimplementation of one generation step gives byte-identical costs to `ga.solve()` for the same seed/N/budget; re-ran `check_env.py` against the team task file's check values |
+
+### Yermukhamed Tilesbay (SA-I)
+
+*(Tilesbay: fill in your own declaration table here.)*
 
 *(Each other author adds their own table above, for their own files only -- per Section 7, "undeclared reuse falls under the academic-integrity policy of the syllabus.")*

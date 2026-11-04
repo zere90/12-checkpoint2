@@ -1,0 +1,5 @@
+PREDICTION (SA-I), written 2026-11-04 BEFORE the final runs on seeds 0-9.
+Fill ratio: CPU 172/454 = 0.38, memory 615/1680 = 0.37. Capacities are far from binding, only the 12 zone-restricted VMs limit where VMs may go.
+1. Feasible runs: 10 of 10. Almost every transfer/swap keeps CPU and memory within capacity, so feasible-only handling rarely rejects.
+2. Mean gap_ref: between 0.0% and 1.0% (z_ref = 5.268322). The latency is convex in utilisation, the problem is "balance utilisation", 35 VMs and 100 000 evaluations is a lot.
+3. What limits the method: not the budget and not the constraints; most likely the integer granularity of CPU requests (1..8 units) on small servers (cpu_cap 34..38) and the cooling scale (T_end), i.e. a few seeds stopping in a slightly different local optimum than z_ref.
