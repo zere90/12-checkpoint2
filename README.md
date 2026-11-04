@@ -129,21 +129,57 @@ All code was read, run and verified by the author before committing.
   $g(u)=u/(1-u)$ that constraint (B4) piecewise-linearizes.)
 
 
-  Checkpoint 4 (Own Metaheuristic)
-Team T12 · Storyline B, variant 2 (zones), seed 12 · tag checkpoint4
+## Checkpoint 4 (Own Metaheuristic)
 
-Roles
-Member | Configuration | Role | Files
-Tilesbay | SA, transfer+swap | SA-I | src/meta/sa.py, tests/test_SA-I.py, experiments/analyze_SA-I.py, results/tilesbay_runs.csv
-Tamerlan | SA, transfer+swap | SA-T | src/meta/nm.py, experiments/tuning.py, random-search baseline
+Team T12 · Storyline B, variant 2 (zones), seed 12 · instance `cp34_instance(12, 'B', 2)`. Tag for this checkpoint will be `checkpoint4`.
 
-SA-I design
-Moves: transfer (70%) and swap (30%). Zone rule: a VM goes only to servers of its required zone. Constraints: only feasible moves are accepted; a move that overloads CPU or memory is evaluated and rejected. T0 and Tend: rule of the course (random walk of 3000 proposals, charged to the budget), or params={"T0":..,"Tend":..}.
+### Roles
 
-How to run (Tilesbay)
+| Member | GitHub | Configuration | Role | Code authored (new for CP4) |
+|---|---|---|---|---|
+| Tilesbay | @etilesbay-stack | SA, transfer+swap | SA-I | `src/meta/sa.py`, `tests/test_SA-I.py`, `experiments/analyze_SA-I.py`, `results/tilesbay_runs.csv` |
+| Tamerlan | @Tabix01 | SA, transfer+swap | SA-T | `src/meta/nm.py`, `experiments/tuning.py`, random-search baseline |
+
+The other three members (Zere, Danial, Rakhima) are in the GA pair and the SA-solo role; their parts are in their own sections of this file.
+
+### SA-I design (Tilesbay)
+
+- State: `assign`, the server of each VM. Cost: sum over servers of the piecewise-linear latency of the CPU utilisation, updated incrementally (only the two servers touched by a move).
+- Moves: transfer (70%) and swap (30%). Zone rule (B2): a VM may only go to a server of its required zone; moves that break it are never generated.
+- Constraints: only feasible moves are accepted. A move that overloads CPU or memory is evaluated (it costs one evaluation) and rejected.
+- Temperatures: rule of the course (random walk of 3000 proposals accepting everything feasible, T0 = 4.5 · median of positive deltas, Tend = 0.22 · 5th percentile; the walk is charged to the budget), or `params={"T0": ..., "Tend": ...}` from SA-T. Geometric cooling.
+- Budget: 100 000 evaluations per run, start solution and every proposal counted, seeds 0-9.
+
+### SA-T design (Tamerlan)
+
+*(Tamerlan: add your part here: Nelder-Mead, tuning experiment, random-search baseline, commands.)*
+
+### How to run (SA-I)
+
+```
 python check_env.py --instance-seed 12 --story B --variant 2
 python tests/test_SA-I.py
 python experiments/run_final.py --module src.meta.sa --instance-seed 12 --story B --variant 2 --team T12 --role SA-I --configuration "SA, transfer+swap" --out results/tilesbay_runs.csv
 python experiments/analyze_SA-I.py --runs results/tilesbay_runs.csv
+```
 
-Declarations
+`analyze_SA-I.py` reruns the ten seeds (deterministic), checks them against the results file and writes Table 1, Table 2, Figure F1 and the acceptance-vs-temperature curve. With tuned temperatures from SA-T add `--params '{"T0": ..., "Tend": ...}'` to both commands. Each test file also runs standalone with `python tests/test_SA-I.py`.
+
+### Repository layout (new for Checkpoint 4)
+
+```
+checkpoint4_generator_PUBLIC.py   shared instance generator (don't edit)
+check_env.py                      environment and instance check
+src/meta/interface.py             solve(...) signature and the checker wrapper (starter kit)
+src/meta/sa.py                    solve(), State, moves                          -- SA-I
+src/meta/nm.py                    Nelder-Mead                                    -- SA-T
+experiments/run_final.py          runs solve on several seeds, writes the CSV (starter kit)
+experiments/analyze_SA-I.py       Table 1, Table 2, F1, acceptance curve         -- SA-I
+experiments/tuning.py             tuning of T0, Tend                             -- SA-T
+tests/test_SA-I.py                test of the role SA-I
+results/tilesbay_runs.csv         10 final runs, seeds 0-9                       -- SA-I
+results/tilesbay_budget30000.csv  extra check with budget 30000                  -- SA-I
+results/tilesbay_analysis.json, F1_SA-I.png, accept_vs_T_SA-I.png, prediction_SA-I.txt
+```
+
+### Declarations (AI assistance / external code, Checkpoint 4)
