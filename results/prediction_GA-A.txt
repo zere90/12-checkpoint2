@@ -1,0 +1,29 @@
+T12 / cloud B2 / GA-A
+Prediction recorded 2026-11-06, before the final runs on seeds 0-9 and before the
+population-diversity/N-size experiment were executed.
+
+Fill ratios are far from binding: CPU 172/454 = 0.38, memory 615/1680 = 0.37 (same
+check-env values the SA pair used). Only VMs with a required zone (a minority of the
+35) are structurally restricted in where they can go; capacity is comfortably loose, so
+most zone-valid individuals should be close to feasible, and the GA, penalty
+configuration (fitness = cost + rho * violation, rho fixed by GA-P's own pre-registered
+rho experiment) should not need a large penalty to steer the population toward
+feasibility.
+
+1. Feasible runs: expect 10 of 10 feasible final solutions. Elitism (keeping the best
+   individual every generation) means feasibility, once found, is never lost from the
+   reported best.
+2. Mean gap_ref: expect a small positive gap, likely larger than SA's (SA already found
+   essentially z_ref on this instance with near-zero variance). GA's crossover/mutation
+   search is less directly greedy than SA's incremental local moves, so I expect more
+   seed-to-seed variance in final cost than SA showed, even at budget 100000.
+3. Population-diversity / N-size experiment: expect N=30 to keep more distinct
+   individuals in the population for longer (more generations needed to converge) than
+   N=15, which should lose diversity faster but complete more generations for the same
+   evaluation budget. I expect final best costs to end up similar between N=15 and N=30
+   at this budget, since 100000 evaluations is generous relative to 35 VMs, with N=30
+   possibly having a slight edge or no meaningful difference.
+4. What limits the method: not the budget, and not zone/capacity feasibility (both
+   comfortably satisfiable here); most likely the integer granularity of CPU/memory
+   requests and how much of the budget elitism "wastes" re-copying the same elite
+   individual forward each generation rather than spending every evaluation exploring.
