@@ -34,7 +34,7 @@ Both methods used seeds 0–9 and exactly 100,000 checker evaluations per seed. 
 | Median | 5.302025 | 0.640 / 1.741 | 5.622094 | 6.715 / 7.335 |
 | Mean | 5.297992 | 0.563 / 1.667 | 5.623761 | 6.747 / 7.363 |
 | Worst | 5.312343 | 0.836 / 1.932 | 5.717093 | 8.518 / 8.875 |
-Both methods returned **10/10 feasible** placements. Sample standard deviation was 0.009793 for GA and 0.051770 for random search. Mean elapsed time was 229.00 s and 314.81 s per run, respectively, on this machine with five experiment workers.
+Both methods returned **10/10 feasible** placements. Sample standard deviation was 0.009793 for GA and 0.051770 for random search. Mean elapsed time was 12.16 s and 14.39 s per run, respectively, in the published GA-A results.
 
 ## Figure F1. Best feasible cost against evaluations
 ![Mean GA trace and min–max band](results/F1_GA-P.png)
