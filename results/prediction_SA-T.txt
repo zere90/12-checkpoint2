@@ -1,0 +1,25 @@
+Checkpoint 4 — SA-T Prediction
+Student: Aitzhanov Tamerlan
+Group: IT-2408
+Team: T12
+Role: SA-T
+Date: 2026-11-07
+
+Status: Retrospectively documented expectation.
+The implementation and some experimental results were already
+available before this prediction was recorded. Therefore, this
+is not claimed to be a prediction registered before experimentation.
+
+I expect Nelder-Mead tuning of T0 and Tend to produce a modest
+improvement over rule-based parameters, especially under a
+limited evaluation budget.
+
+The instance has relatively low CPU and memory utilization,
+but zone restrictions reduce the feasible neighbourhood.
+
+I expect the improvement from tuning to be small relative to
+variation between random seeds. With a large evaluation budget,
+both configurations may reach similar final costs.
+
+Random search should perform worse than simulated annealing,
+because it does not exploit local transfer and swap moves.
