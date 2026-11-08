@@ -152,22 +152,40 @@ Reference values (team task file): $z_{LP} = 5.209695$ (matches Checkpoint 3 exa
 
 ## SA-I design (Tilesbay)
 
-- State: `assign`, the server of each VM. Cost: sum over servers of the piecewise-linear latency of the CPU utilisation, updated incrementally (only the two servers touched by a move).
-- Moves: transfer (70%) and swap (30%). Zone rule (B2): a VM may only go to a server of its required zone; moves that break it are never generated.
-- Constraints: only feasible moves are accepted. A move that overloads CPU or memory is evaluated (it costs one evaluation) and rejected.
-- Temperatures: rule of the course (random walk of 3000 proposals accepting everything feasible, T0 = 4.5 · median of positive deltas, Tend = 0.22 · 5th percentile; the walk is charged to the budget), or `params={"T0": ..., "Tend": ...}` from SA-T. Geometric cooling.
-- Budget: 100 000 evaluations per run, start solution and every proposal counted, seeds 0-9.
+Yermukhamed Tilesbay, role SA-I, configuration **SA, transfer+swap**, instance `cp34_instance(12, 'B', 2)`; partner Tamerlan (SA-T). Results: `results/tilesbay_*`.
 
-### How to run (SA-I)
+**Design.**
+- State: `assign`, the server of each VM. The cost is the sum over servers of the piecewise-linear latency of the CPU utilisation (the formula of the checker). It is updated incrementally: only the two servers touched by a move change.
+- Moves: transfer (70%) and swap (30%, `params["p_swap"]`). Zone rule (B2): a VM may only go to a server of its required zone; moves that break it are never generated.
+- Constraint handling: only feasible moves. A move that overloads CPU or memory costs one evaluation and is rejected. No penalty, so the current state is always feasible and `solve` returns the best feasible solution.
+- Start: random feasible assignment (most restricted VMs first, each to a random allowed server where it fits); it counts as one evaluation. `start` is accepted and used if given.
+- Temperatures: rule of the course. A random walk of 3000 proposals that accepts every feasible move runs inside `solve` and is charged to the budget; `T0 = 4.5 * median(delta > 0)`, `Tend = 0.22 * 5th percentile(delta > 0)`, geometric cooling `T_k = T0 * alpha^k`. With `params={"T0": ..., "Tend": ...}` (from SA-T) there is no walk.
+- Budget: 100 000 evaluations per run (start + walk + annealing proposals), seeds 0-9, own `random.Random(seed)`, no global random state, `z_ref` and `z_LP` never read by `solve`.
+- Worsening moves in Table 2 and in the acceptance curve: all proposals with Δ > 0, including those rejected for capacity (they are about 7% of the worsening ones; the log keeps a feasibility flag for each).
+
+**Commands** (from the repository root):
 
 ```
 python check_env.py --instance-seed 12 --story B --variant 2
 python tests/test_SA-I.py
 python experiments/run_final.py --module src.meta.sa --instance-seed 12 --story B --variant 2 --team T12 --role SA-I --configuration "SA, transfer+swap" --out results/tilesbay_runs.csv
+python experiments/run_final.py --module src.meta.sa --instance-seed 12 --story B --variant 2 --team T12 --role SA-I --configuration "SA, transfer+swap (budget check)" --budget 30000 --out results/tilesbay_budget30000.csv
 python experiments/analyze_SA-I.py --runs results/tilesbay_runs.csv
 ```
 
-`analyze_SA-I.py` reruns the ten seeds (deterministic), checks them against the results file and writes Table 1, Table 2, Figure F1 and the acceptance-vs-temperature curve. With tuned temperatures from SA-T add `--params '{"T0": ..., "Tend": ...}'` to both commands. Each test file also runs standalone with `python tests/test_SA-I.py`.
+`analyze_SA-I.py` reruns the ten seeds, stops if a rerun differs from `results/tilesbay_runs.csv`, and writes Table 1, Table 2 and the worst-seed checks to `results/tilesbay_analysis.json`, Figure F1 to `results/F1_SA-I.png` and the acceptance curve to `results/accept_vs_T_SA-I.png`. The prediction written before the final runs is in `results/prediction_SA-I.txt`. With tuned temperatures from SA-T add `--params '{"T0": ..., "Tend": ...}'` to the runner and to the analysis. The report is `Tilesbay_CP4.tex` / `Tilesbay_CP4.pdf`. The `seconds` column depends on the machine.
+
+**Environment.** Python 3.11 or newer; only the standard library, numpy (median and percentile of the walk) and matplotlib (figures) in `src/meta/sa.py` and `experiments/analyze_SA-I.py`. No scipy.optimize, no metaheuristic library. `tests/test_SA-I.py` runs with pytest or standalone.
+
+**SA-I declaration · Tilesbay**
+
+| Tool or source | Used for | Files or sections | What I checked myself |
+| --- | --- | --- | --- |
+| Claude (AI assistant) | Assisted with implementation suggestions, debugging, code improvements, and experiment analysis. | `src/meta/sa.py`, `tests/test_SA-I.py`, `experiments/analyze_SA-I.py`, `Tilesbay_CP4.tex` | I reviewed the implementation, ran the tests and ten final runs locally, checked the results in `results/tilesbay_runs.csv`, and verified the implementation against the required interface and constraints. |
+| Course generator, starter kit, instructions, guide and T12 task file | Instance, checker, runner, protocol, and reference values. | `checkpoint4_generator_PUBLIC.py`, `check_env.py`, `experiments/run_final.py`, `src/meta/interface.py` | `check_env.py` confirmed the task check values: S = 10, M = 35, CPU = 454 and 172, memory = 1680 and 615. |
+| NumPy and Matplotlib | Calibration statistics, numerical summaries, and figures. | `src/meta/sa.py`, `experiments/analyze_SA-I.py` | I compared the generated figures and summaries with the values in `results/tilesbay_analysis.json`. |
+| Aitzhanov Tamerlan's SA-T results | Temperature parameters and related experiment information. | SA-I temperature configuration and final experiments. | I checked the parameters used in the final runs and verified the resulting costs. |
+
 
 ## SA-T design (Tamerlan)
 
@@ -184,6 +202,8 @@ python experiments/baseline_sa_t.py
 python make_report.py
 ```
 `baseline_sa_t.py` appends to tuning CSV; do not execute it twice without regenerating the tuning CSV. Tuning seeds 100–104, inner budget 20,000, 25 Nelder–Mead objective calls. The random baseline evaluates 100,000 independent zone-compatible candidates per seed; infeasible candidates count toward the budget. For final SA, tuning selection is made on tuning seeds only.
+
+
 
 | Tool/source | Used for | Files/sections | What to verify independently |
 |---|---|---|---|
