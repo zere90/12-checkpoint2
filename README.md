@@ -179,13 +179,13 @@ python experiments/analyze_SA-I.py --runs results/tilesbay_runs.csv
 
 **SA-I declaration · Tilesbay**
 
+**SA-I declaration · Tilesbay**
+
 | Tool or source | Used for | Files or sections | What I checked myself |
 | --- | --- | --- | --- |
-| Claude (AI assistant) | Assisted with implementation suggestions, debugging, code improvements, and experiment analysis. | `src/meta/sa.py`, `tests/test_SA-I.py`, `experiments/analyze_SA-I.py`, `Tilesbay_CP4.tex` | I reviewed the implementation, ran the tests and ten final runs locally, checked the results in `results/tilesbay_runs.csv`, and verified the implementation against the required interface and constraints. |
 | Course generator, starter kit, instructions, guide and T12 task file | Instance, checker, runner, protocol, and reference values. | `checkpoint4_generator_PUBLIC.py`, `check_env.py`, `experiments/run_final.py`, `src/meta/interface.py` | `check_env.py` confirmed the task check values: S = 10, M = 35, CPU = 454 and 172, memory = 1680 and 615. |
 | NumPy and Matplotlib | Calibration statistics, numerical summaries, and figures. | `src/meta/sa.py`, `experiments/analyze_SA-I.py` | I compared the generated figures and summaries with the values in `results/tilesbay_analysis.json`. |
 | Aitzhanov Tamerlan's SA-T results | Temperature parameters and related experiment information. | SA-I temperature configuration and final experiments. | I checked the parameters used in the final runs and verified the resulting costs. |
-
 
 ## SA-T design (Tamerlan)
 
