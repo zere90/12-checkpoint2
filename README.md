@@ -171,7 +171,26 @@ python experiments/analyze_SA-I.py --runs results/tilesbay_runs.csv
 
 ## SA-T design (Tamerlan)
 
-*(Tamerlan: add your part here: Nelder-Mead, tuning experiment, random-search baseline, commands.)*
+Configuration: SA, transfer + swap; partner Tilesbay Yermukhamed (SA-I). Instance: `cp34_instance(12, 'B', 2)`.
+
+SA-T owns `src/meta/nm.py`, `experiments/tuning.py`, `experiments/baseline_sa_t.py`, `tests/test_sa_t.py`, `results/Aitzhanov_tuning.csv`, `results/Aitzhanov_tuning_summary.json`, `results/Aitzhanov_NM_trace.png`.
+
+Run from repository root:
+```
+python check_env.py --instance-seed 12 --story B --variant 2
+python -m unittest discover -s tests -p 'test_sa_t.py' -v
+python experiments/tuning.py
+python experiments/baseline_sa_t.py
+python make_report.py
+```
+`baseline_sa_t.py` appends to tuning CSV; do not execute it twice without regenerating the tuning CSV. Tuning seeds 100–104, inner budget 20,000, 25 Nelder–Mead objective calls. The random baseline evaluates 100,000 independent zone-compatible candidates per seed; infeasible candidates count toward the budget. For final SA, tuning selection is made on tuning seeds only.
+
+| Tool/source | Used for | Files/sections | What to verify independently |
+|---|---|---|---|
+| ChatGPT | Draft implementation, tests, experiments, report | SA-T files and PDF | Student must check Nelder–Mead test cases, evaluation accounting, reproducibility, and explanations before submission |
+| SA-I partner code | Solver interface and final trace | `src/meta/sa.py`, `results/tilesbay_*`, F1 | Check source commit ownership and independently rerun seed 0 |
+
+**Authorship:** commit only your own contributions under your own account. Do not attribute the partner's code to yourself. The prediction in the generated report is explicitly marked for review; do not claim it predates final runs unless it really does.
 
 ## GA-A (Zere)
 
