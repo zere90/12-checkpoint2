@@ -1,0 +1,11 @@
+PREDICTION (SA-solo, configuration "SA, transfer"), fixed on 2026-11-08 BEFORE the final runs on seeds 0-9.
+Authorship: prepared from the data below (see the declaration in README.md).
+Known at this point: instance fill, the tuning grid on seeds 100-104, and the published results
+
+Facts used. CPU fill 172/454 = 37.9%, memory fill 615/1680 = 36.6%; 12 of 35 VMs are tied to a zone.
+Selected parameters T0 = 0.2901, Tend = 0.00102 (best of 9 cells, mean cost 5.2784 on seeds 100-104; the nine cell means lie within 5.2784-5.2891, and the spread between seeds is sd about 0.0075).
+
+1. Feasible runs: 10 of 10. The start is feasible, only feasible moves are accepted, and the capacities are far from full.
+2. Mean gap_ref: between 0.10% and 0.35%. The selected cell gave about 0.19% on the tuning seeds, but it is the best of nine noisy cells, so a slightly worse value on seeds 0-9 is expected.
+3. Limit: the neighbourhood. With transfers only, exchanging two VMs needs an uphill intermediate step, which becomes unlikely when the temperature falls. I expect the worst seed to have 0 improving transfers and at least one improving swap. I do not expect the budget to be the limit (the curve should be flat at the end), nor the capacities.
+4. Acceptance of worsening moves: high in the first 5% of proposals (about 30-60%, T0 is below the rule value) and below 2% in the last 5%.
