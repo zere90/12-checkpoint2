@@ -200,9 +200,9 @@ python make_report.py
 ```
 `baseline_sa_t.py` appends to tuning CSV; do not execute it twice without regenerating the tuning CSV. Tuning seeds 100–104, inner budget 20,000, 25 Nelder–Mead objective calls. The random baseline evaluates 100,000 independent zone-compatible candidates per seed; infeasible candidates count toward the budget. For final SA, tuning selection is made on tuning seeds only.
 
-
-
-**Dependencies and verification.** The SA-T experiments use the SA-I solver implemented by Tilesbay Yermukhamed (`src/meta/sa.py`). Nelder–Mead is implemented separately in `src/meta/nm.py`. The tuning experiments use the SA-I solver through its existing interface without modifying the partner's implementation.
+| Tool/source | Used for | Files/sections | What I checked myself |
+|---|---|---|---|
+| SA-I partner code | Solver interface and final trace | `src/meta/sa.py`, `results/tilesbay_*`, F1 | Verified compatibility with the SA-T tuning experiments. Used the partner's recorded seed-0 analysis; the seed-0 checks were not independently rerun. |
 
 **Prediction status.** The prediction was documented after preliminary exposure to experimental results and is not presented as a pre-registered prediction.
 
