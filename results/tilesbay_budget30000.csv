@@ -1,11 +1,11 @@
 team,role,configuration,seed,budget,cost,evals,feasible,seconds,params
-T12,SA-I,"SA, transfer+swap (budget check)",0,30000,5.269411409,30000,True,0.12,
-T12,SA-I,"SA, transfer+swap (budget check)",1,30000,5.272957508,30000,True,0.11,
-T12,SA-I,"SA, transfer+swap (budget check)",2,30000,5.273080713,30000,True,0.17,
-T12,SA-I,"SA, transfer+swap (budget check)",3,30000,5.272957508,30000,True,0.16,
-T12,SA-I,"SA, transfer+swap (budget check)",4,30000,5.268322084,30000,True,0.13,
-T12,SA-I,"SA, transfer+swap (budget check)",5,30000,5.268322084,30000,True,0.09,
-T12,SA-I,"SA, transfer+swap (budget check)",6,30000,5.268322084,30000,True,0.09,
-T12,SA-I,"SA, transfer+swap (budget check)",7,30000,5.269411409,30000,True,0.10,
-T12,SA-I,"SA, transfer+swap (budget check)",8,30000,5.268322084,30000,True,0.10,
-T12,SA-I,"SA, transfer+swap (budget check)",9,30000,5.268322084,30000,True,0.09,
+T12,SA-I,"SA, transfer+swap (budget check)",0,30000,5.268322084,30000,True,0.08,"{""T0"": 0.820689, ""Tend"": 0.000795}"
+T12,SA-I,"SA, transfer+swap (budget check)",1,30000,5.268322084,30000,True,0.07,"{""T0"": 0.820689, ""Tend"": 0.000795}"
+T12,SA-I,"SA, transfer+swap (budget check)",2,30000,5.268322084,30000,True,0.07,"{""T0"": 0.820689, ""Tend"": 0.000795}"
+T12,SA-I,"SA, transfer+swap (budget check)",3,30000,5.268322084,30000,True,0.07,"{""T0"": 0.820689, ""Tend"": 0.000795}"
+T12,SA-I,"SA, transfer+swap (budget check)",4,30000,5.268322084,30000,True,0.07,"{""T0"": 0.820689, ""Tend"": 0.000795}"
+T12,SA-I,"SA, transfer+swap (budget check)",5,30000,5.268322084,30000,True,0.07,"{""T0"": 0.820689, ""Tend"": 0.000795}"
+T12,SA-I,"SA, transfer+swap (budget check)",6,30000,5.268322084,30000,True,0.07,"{""T0"": 0.820689, ""Tend"": 0.000795}"
+T12,SA-I,"SA, transfer+swap (budget check)",7,30000,5.268322084,30000,True,0.07,"{""T0"": 0.820689, ""Tend"": 0.000795}"
+T12,SA-I,"SA, transfer+swap (budget check)",8,30000,5.268322084,30000,True,0.07,"{""T0"": 0.820689, ""Tend"": 0.000795}"
+T12,SA-I,"SA, transfer+swap (budget check)",9,30000,5.268322084,30000,True,0.07,"{""T0"": 0.820689, ""Tend"": 0.000795}"
