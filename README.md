@@ -177,15 +177,12 @@ python experiments/analyze_SA-I.py --runs results/tilesbay_runs.csv
 
 **Environment.** Python 3.11 or newer; only the standard library, numpy (median and percentile of the walk) and matplotlib (figures) in `src/meta/sa.py` and `experiments/analyze_SA-I.py`. No scipy.optimize, no metaheuristic library. `tests/test_SA-I.py` runs with pytest or standalone.
 
-**SA-I declaration · Tilesbay**
-
-**SA-I declaration · Tilesbay**
+**SA-I Declaration · Tilesbay**
 
 | Tool or source | Used for | Files or sections | What I checked myself |
 | --- | --- | --- | --- |
-| Course generator, starter kit, instructions, guide and T12 task file | Instance, checker, runner, protocol, and reference values. | `checkpoint4_generator_PUBLIC.py`, `check_env.py`, `experiments/run_final.py`, `src/meta/interface.py` | `check_env.py` confirmed the task check values: S = 10, M = 35, CPU = 454 and 172, memory = 1680 and 615. |
-| NumPy and Matplotlib | Calibration statistics, numerical summaries, and figures. | `src/meta/sa.py`, `experiments/analyze_SA-I.py` | I compared the generated figures and summaries with the values in `results/tilesbay_analysis.json`. |
-| Aitzhanov Tamerlan's SA-T results | Temperature parameters and related experiment information. | SA-I temperature configuration and final experiments. | I checked the parameters used in the final runs and verified the resulting costs. |
+| Course generator, starter kit, instructions, guide and T12 task file | Creating the assigned instance, checking solutions and following the experiment protocol. | `checkpoint4_generator_PUBLIC.py`, `check_env.py`, `experiments/run_final.py`, `src/meta/interface.py` | I ran `check_env.py` and checked the instance values: S = 10, M = 35, CPU = 454 and 172, memory = 1680 and 615. |
+| NumPy and Matplotlib | Calculating calibration-walk statistics, summarizing experiment results and generating figures. | `src/meta/sa.py`, `experiments/analyze_SA-I.py` | I checked the analysis output in `results/tilesbay_analysis.json` and compared it with the generated figures. |
 
 ## SA-T design (Tamerlan)
 
