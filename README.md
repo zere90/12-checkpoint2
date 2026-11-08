@@ -173,8 +173,13 @@ python experiments/analyze_SA-I.py --runs results/tilesbay_runs.csv
 
 *(Tamerlan: add your part here: Nelder-Mead, tuning experiment, random-search baseline, commands.)*
 
-## GA-A (Zere): how to run
+## GA-A (Zere)
 
+| Tool or source | Used for | Files or sections | What you checked yourself |
+| --- | --- | --- | --- |
+| Course generator, starter kit, instructions, guide and T12 task file | Instance, checker, run protocol, reference values ($z_{ref}$, $z_{LP}$). | GA-A experiments, Tables 1–2, F1 | `check_env.py` matched the task file's check values (S=10, M=35, CPU 172/454, memory 615/1680). |
+| NumPy and Matplotlib | Numerical summaries, Figure F1 and the diversity figure. | `ga.py`, `experiments/run_popsize_diversity.py`, analysis | Figures compared against the numbers in the analysis output. |
+| Kabdulla Danial's `ga_problem.py` (GA-P, same pair) | The GA operators (representation, `random_individual`, `evaluate`, `crossover`, `mutate`). | Shared GA loop input | I reread his file myself and ran my own `tests/test_ga_a.py` against it (5/5) before trusting it for the final runs. |
 ```
 pip install numpy matplotlib --break-system-packages   # or inside your venv, no flag needed there
 python3 check_env.py --instance-seed 12 --story B --variant 2     # confirm check values first
