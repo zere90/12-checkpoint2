@@ -252,7 +252,41 @@ To rebuild the tables and figure from the saved runs alone, use `python -m exper
 
 ## SA-solo (Rakhima)
 
-*(Rakhima: add your part here: your sa.py design, the manual tuning grid, commands.)*
+Noken Rakhima, role SA-solo, configuration **SA, transfer**, instance `cp34_instance(12, 'B', 2)`. Results: `results/noken_*`.
+
+**File names.** `src/meta/sa.py` belongs to SA-I (Tilesbay), so the solo SA is `src/meta/sa_solo.py`; its `solve(d, variant, seed, budget, params=None, start=None)` has the interface of Section 3. The baseline is my own `src/meta/random_solo.py`; `src/meta/random_search.py` is GA-A's.
+
+**Design.**
+- State: `assign`, the server of each VM. The cost is updated incrementally (only the two servers touched by a move change), from a table of the checker's latency values per server and integer CPU load.
+- Moves: transfer only. No swap and no variant-specific move. A VM is drawn uniformly among the VMs with at least two allowed servers, the target uniformly among its other allowed servers, so a zone is never broken.
+- Constraint handling: only feasible moves. A transfer that overloads CPU or memory costs one evaluation and is rejected. No penalty.
+- Start: randomised greedy; the most restricted and largest VMs go first onto a random server that fits. It reads only the data and counts as one evaluation. If no feasible start exists, moves that do not raise the overload are accepted until the state is feasible; a run that never becomes feasible returns `feasible=False`.
+- Temperatures: geometric cooling `T_k = T0 * alpha^k`, `alpha = (Tend/T0)^(1/K)`. With `params={"T0": ..., "Tend": ...}` there is no calibration walk and `K = budget - 1`. With `params=None` the 3000-proposal walk of Section 4 runs inside `solve` and is charged to the budget (at most 10% of the budget, for small budgets).
+- Worsening moves in Table 2 and the acceptance curve: feasible proposals with Δ > 0. Proposals rejected for capacity have no Δ in this code, are not counted as worsening and are reported separately.
+
+**Manual tuning grid** (role table, seeds 100-104, budget 100 000): `T0` and `Tend` are the rule-based values (walk with seed 100: `T0 = 0.870182`, `Tend = 0.003059`) times 1/3, 1 or 3, so 2 parameters with 3 values each. The lowest mean cost is kept, and the rule-based cell wins a tie. Selected: `T0 = 0.29006072102002334`, `Tend = 0.0010197932600936345`. The final runs use these values, so `K = 99 999`.
+
+**Commands** (from the repository root, Python 3.9.6, NumPy 2.0.2, Matplotlib 3.9.4):
+
+```
+python check_env.py --instance-seed 12 --story B --variant 2
+python tests/test_sa_solo.py
+python experiments/tune_sa_solo.py
+python experiments/run_final.py --module src.meta.sa_solo --instance-seed 12 --story B --variant 2 --team T12 --role SA-solo --configuration "SA, transfer" --seeds 0-9 --budget 100000 --params '{"T0": 0.29006072102002334, "Tend": 0.0010197932600936345}' --out results/noken_runs.csv
+python experiments/run_final.py --module src.meta.random_solo --instance-seed 12 --story B --variant 2 --team T12 --role SA-solo --configuration random --seeds 0-9 --budget 100000 --out results/noken_runs.csv --append
+python experiments/analyze_sa_solo.py
+```
+
+`analyze_sa_solo.py` reruns the ten seeds, stops if a rerun differs from `results/noken_runs.csv`, and writes Table 1, Table 2 and the worst-seed checks to `results/noken_analysis.json`, Figure F1 to `results/F1_noken.png` and the acceptance curve to `results/accept_vs_T_noken.png`. The tuning grid is in `results/noken_tuning.csv` and `results/noken_tuning_summary.csv`; the selected parameters are in `results/noken_params.json`. Rows in `results/noken_runs.csv` with `configuration` = `random` are the baseline. The `seconds` column depends on the machine.
+
+**Declaration · Noken Rakhima**
+
+| Tool or source | Used for | Files or sections | What was checked |
+| --- | --- | --- | --- |
+| Author's work & custom scripts | Implemented the SA, the baseline, the role test, the tuning and analysis scripts and this README section; ran the experiments; prepared the prediction before the final runs; wrote the report text and designed the PDF layout. | `src/meta/sa_solo.py`, `src/meta/random_solo.py`, `tests/test_sa_solo.py`, `experiments/tune_sa_solo.py`, `experiments/analyze_sa_solo.py`, `results/noken_prediction.txt`, this section, `Noken_CP4.pdf` | The 11 checks of `tests/test_sa_solo.py` pass (incremental cost against the checker on 1000 moves up to 1e-9, same seed, exact budget, monotone trace, zones, honest feasible flag). The analysis reruns all ten seeds against the results file; the moves of Table 2 are judged by the checker. |
+| Course generator, starter kit, instructions, guide and T12 task file | Instance, checker, runner, protocol, reference values. | `checkpoint4_generator_PUBLIC.py`, `check_env.py`, `experiments/run_final.py`, `src/meta/interface.py` | `check_env.py` prints the check values of the task file: S 10, M 35, CPU 454 and 172, memory 1680 and 615. |
+| NumPy and Matplotlib | Median and percentile of the calibration walk, summaries, figures. | `src/meta/sa_solo.py`, `experiments/analyze_sa_solo.py` | Figures were compared with the numbers in `results/noken_analysis.json`. |
+
 
 ## Repository layout (new for Checkpoint 4)
 
