@@ -1,0 +1,9 @@
+{
+  "ref_obj_exact": 5.268322083990175,
+  "ref_check_exact": 5.268322083990169,
+  "cp1_obj_exact": 7.5301121610827,
+  "ref_obj_sa": 5.268322083990169,
+  "ref_check_sa": 5.268322083990169,
+  "cp1_obj_sa": 6.968945461299242,
+  "same_assignment": false
+}

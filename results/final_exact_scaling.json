@@ -1,0 +1,26 @@
+{
+  "100": {
+    "objective": 9.176682013916905,
+    "bound": 9.176682013916905,
+    "solver_gap": 0.0,
+    "proven": true,
+    "seconds": 14.7,
+    "wall_seconds": 14.7
+  },
+  "200": {
+    "objective": 24.945886576767027,
+    "bound": 24.70806848037969,
+    "solver_gap": 0.009533359163463226,
+    "proven": false,
+    "seconds": 120.0,
+    "wall_seconds": 120.0
+  },
+  "400": {
+    "objective": 55.339799704455984,
+    "bound": 54.64736979655691,
+    "solver_gap": 0.01251233129857752,
+    "proven": false,
+    "seconds": 120.1,
+    "wall_seconds": 120.1
+  }
+}

@@ -1,0 +1,188 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{amsmath,amssymb,booktabs,tabularx,graphicx,xcolor,enumitem,hyperref}
+\graphicspath{{figs/}}
+
+\newcommand{\hint}[1]{\textcolor{gray}{\textit{[#1]}}}
+\newcommand{\zref}{z_{\mathrm{ref}}}
+\newcommand{\zLP}{z_{\mathrm{LP}}}
+\setlength{\parindent}{0pt}\setlength{\parskip}{4pt}
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries Final report}\\[4pt]
+{\large Introduction to Optimization}
+\end{center}
+
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+Team & T12 \\
+Storyline, variant & B, 2 (cloud resource allocation, zones) \\
+Members & Zhussupbekova Zere, Kabdulla Danial, Yermukhamed Tilesbay, Aitzhanov Tamerlan, Noken Rakhima \\
+Repository & \url{https://github.com/zere90/12-checkpoint2} \\
+Tag and commit hash & \texttt{final}, \hint{fill in after tagging} \\
+\bottomrule
+\end{tabularx}
+
+\section{From the Checkpoint 1 model to the reference model}
+
+Checkpoint 1 (22 September 2026) was our own, team-chosen formulation of storyline B, variant 2, on the same data (seed 12, variant 2) used ever since. The reference model built from Checkpoint 3 onward (\texttt{src/model/build.py:build\_b2\_model}, the model behind $\zref$, $\zLP$, Table 2 and Table 3 above) is not that formulation -- it is the model the course handout fixed for everyone from Checkpoint 3 on, so that every team's exact solver, LP relaxation and metaheuristics are comparable. This section compares the two models element by element, then checks what our \emph{own} Checkpoint 1 objective says about the solutions the reference model calls optimal.
+
+\subsection*{Table 1. Element by element}
+{\small
+\begin{tabularx}{\textwidth}{@{}p{2.6cm}Xp{1.7cm}X@{}}
+\toprule
+Element & In Checkpoint~1 / in the reference model & Kept, changed, dropped & What it does to the meaning of the answer\\
+\midrule
+Variables & CP1: $x_{ij}\in\{0,1\}$, VM $i$ on server $j$ (350 vars, no auxiliaries). Reference: $y_{kl}\in\{0,1\}$ (same meaning, renamed) plus $t_l\ge0$, one per server (360 vars: 325 free $y$, 60 fixed to 0 by zones, 10 $t$). & Kept + added & $x_{ij}$'s meaning is unchanged; $t_l$ is new bookkeeping needed to turn a nonlinear per-server penalty into linear constraints (below), not a new decision about placement.\\
+Objective & CP1: $\min \sum_j n_j(x)\,u_j(x)^2$ -- quadratic in utilization, weighted by how many VMs server $j$ hosts. Reference: $\min \sum_l t_l$ -- linear in the new variables, with $t_l$ forced by (B4) to sit above 4 tangent lines of $g(u)=u/(1-u)$. & Changed & Two changes at once: (i) the latency-vs-utilization curve itself changes (quadratic $\to$ piecewise-linear bound on an M/M/1 curve, see Assumption~1), and (ii) the reference model drops the per-server VM-count weighting $n_j(x)$ entirely -- it sums one latency number per server, not one per VM hosted. A solution that is best for ``total latency summed once per server'' need not be best for ``total latency experienced across all VMs,'' which is exactly what Section~3 below finds.\\
+Constraint group 1 (complete assignment) & CP1 (C1): $\sum_j x_{ij}=1\ \forall i$. Reference (B1): $\sum_l y_{kl}=1\ \forall k$. & Kept & Identical meaning under the variable renaming; every VM still placed exactly once.\\
+Constraint group 2 (capacity) & CP1 (C2)/(C3): $\sum_i x_{ij}\,\mathrm{cpu\_req}_i\le \mathrm{cpu\_cap}_j$, same for memory. Reference (B2)/(B3): same two inequalities in $y$. & Kept & Identical meaning; capacity and the zone restriction (C4/forbidden-pair upper bounds) and integrality (C5) all carry over unchanged in substance, only renamed.\\
+Assumption 1 (latency--utilization function) & CP1 Section 5: we chose $f(u)=u^2$ \emph{specifically rejecting} the classical M/M/1 curve $g(u)=u/(1-u)$, because $g$ blows up as $u\to1$ and would make the objective unstable (Tilesbay's and Tamerlan's signed paragraphs). Reference model: uses $g(u)=u/(1-u)$ itself -- the very curve we rejected -- but replaced by a 4-segment piecewise-linear \emph{lower envelope} (tangents at $u=0,0.4,0.7,0.9$), which stays finite by construction. & Changed & The reference model keeps the accelerating-congestion shape our Tamerlan argued CPU contention should have, while avoiding the blow-up we were worried about, by bounding rather than evaluating $g$ exactly. So neither model is simply ``more correct'' than the other: CP1 chose boundedness over shape-fidelity; the reference model gets both, but only as a lower bound, never the true $g(u)$ value (CP3 S1, Tilesbay).\\
+\bottomrule
+\end{tabularx}}
+
+\subsection*{Own objective on the reference solutions}
+Both rows use instance \texttt{cp34\_instance(12,'B',2)} (seed 12, variant 2 -- the same data as Checkpoint 1). The reference-optimum assignment was recomputed by solving \texttt{build\_b2\_model(d)} exactly (HiGHS, proven, matches $\zref=5.268322$ to 6 decimals); the approximate-method assignment is SA with seed 0 (Table 2: all 10 SA seeds tie $\zref$ exactly, std $=0$, so any seed represents ``the'' SA solution). The two assignments are \emph{not} identical -- the reference model has multiple optimal vertices, as Checkpoint 3's Rakhima already noted for the LP relaxation (S2) -- which is itself part of the finding below.
+
+\begin{tabularx}{\textwidth}{@{}Xrr@{}}
+\toprule
+Solution & Value under the reference objective & Value under my Checkpoint~1 objective\\
+\midrule
+Optimum of the reference model ($\zref$) & 5.268322 & 7.530112\\
+Best solution of the approximate methods (SA, seed 0) & 5.268322 & 6.968945\\
+\bottomrule
+\end{tabularx}
+
+{\small\hint{Reproduced by experiments/block1\_own\_objective.py: solves build\_b2\_model(d) exactly for the assignment, re-solves SA(seed=0) for the other, and evaluates CP1's own $F(x)=\sum_j n_j(x)u_j(x)^2$ on each resulting assignment directly from the same cpu\_req/cpu\_cap data. Source: results/block1\_own\_objective.json.}}
+
+\subsection*{Conclusion}
+Both solutions that the reference model calls optimal cost noticeably more under our own Checkpoint~1 objective (7.53 and 6.97) than Checkpoint 1's own hand-built witness assignment scored under that same objective (5.075, Appendix C of that report) -- even though that witness was only a greedy construction improved by single-VM moves, not an optimized solution. The two objectives are measuring genuinely different things: the reference model minimizes total latency summed once per server, while Checkpoint 1 minimizes total latency weighted by how many VMs are exposed to it. A placement that is best for the first can concentrate VMs on a few low-$t_l$ servers in a way that is actively bad for the second, since every VM added to an already-loaded server multiplies that server's penalty under $n_j(x)u_j(x)^2$ but costs the reference model nothing extra beyond its own $t_l$. So the two models are not interchangeable summaries of the same quality, and a result reported under one should never be quoted as if it were optimal, or even good, under the other -- which is also why every number elsewhere in this report (Blocks 2-4) is explicitly reported under the reference model only, never mixed with Checkpoint 1's.
+
+\section{Comparison of the methods of the team}
+
+{\small
+\begin{tabular}{@{}p{3.0cm}rrrrccrr@{}}
+\toprule
+Method & best & mean & worst & std & feas. & time, s & gap$_{\mathrm{ref}}$, \% & gap$_{\mathrm{LP}}$, \%\\
+\midrule
+GA, penalty (GA-A/GA-P)          & 5.282228 & 5.297992 & 5.312343 & 0.009793 & 10/10 & 12.16  & 0.563 & 1.666\\
+SA, transfer+swap (SA-I/SA-T)    & 5.268322 & 5.268322 & 5.268322 & 0.000000 & 10/10 & 0.22   & 0.0000 & 1.113\\
+SA, transfer (SA-solo)           & 5.276919 & 5.283488 & 5.295145 & 0.006855 & 10/10 & 0.15   & 0.288 & 1.397\\
+Random search                    & 5.549270 & 5.623761 & 5.717093 & 0.051770 & 10/10 & 14.39  & 6.747 & 7.356\\
+Exact solver (HiGHS, CP3 model)  & 5.268322 & --       & --       & --       & proven & 1.2    & 0.0000 & 1.113\\
+\bottomrule
+\end{tabular}}
+
+\[
+\mathrm{gap}_{\mathrm{ref}}=100\cdot\frac{z-\zref}{\zref},\qquad
+\mathrm{gap}_{\mathrm{LP}}=100\cdot\frac{z-\zLP}{z}.
+\]
+{\small\hint{Numbers reproduce from results/Zhussupbekova\_runs.csv, results/tilesbay\_runs.csv, results/noken\_runs.csv (Checkpoint 4) and results/final\_exact.json (this checkpoint's exact-solver rerun on the original instance, CP3 model, HiGHS, proven in 1.2s). $\zref=5.268322$, $\zLP=5.209695$ (task file).}}
+
+\subsection*{Figure F1}
+\includegraphics[width=0.95\textwidth]{F1_final.png}
+
+\subsection*{Analysis}
+
+SA (both the pair's tuned transfer+swap and the solo transfer-only variant) dominates: it reaches $\zref$ itself with every one of its ten seeds in the pair's case (std $=0$), and within 0.29\% of it, worst case, for the solo variant. GA trails by about half a percentage point on gap$_{\mathrm{ref}}$ and shows real seed-to-seed spread (std 0.0098, roughly the same order as its own gap). Both beat random search by an order of magnitude. The difference between SA and GA is not noise: SA's own std (0, or 0.0069 for SA-solo) is far smaller than the 0.030 spread between GA's best and worst seed, so GA's shortfall relative to SA is a real effect, not seed luck.
+
+The mechanism is the one the Checkpoint 4 checks already pointed to. Danial's (GA-P) worst-seed check on seed 5 (\texttt{results/kabdulla\_analysis.json}, Table 2 of that checkpoint) found one feasible, strictly cheaper transfer and seven feasible, strictly cheaper swaps sitting unexploited right next to GA's reported solution -- crossover and mutation keep injecting fresh genotypes without ever locally polishing the current best. Tilesbay's (SA-I) worst-seed check, by contrast, found zero improving transfers and zero improving swaps at the final solution: SA's incremental move-and-accept loop walks directly into a point from which no cheap move remains, because unlike GA it searches the move neighbourhood of its current incumbent exhaustively rather than sampling a population. The gap$_{\mathrm{LP}}$ column shows the same story cannot be pushed further by any of these methods: SA's own gap$_{\mathrm{LP}}$ (1.113\%) already equals the integrality gap of the relaxation itself, $100(\zref-\zLP)/\zref=1.113\%$ -- the remaining distance to $\zLP$ is not a search error for any method, including the exact solver.
+
+No statement here contradicts Table 2: SA's reported std of 0 is consistent with all ten of its seeds reaching the exact value the exact solver also proves optimal.
+
+\section{Scaling: where does each method break down?}
+
+\subsection*{Table 3}
+{\small
+\begin{tabular}{@{}lp{3.8cm}rrp{2.0cm}p{2.2cm}r@{}}
+\toprule
+Size & Method & Value & Best known & Gap to best known, \% & Solver gap, \% (exact only) & Time, s\\
+\midrule
+$M{=}100$ & exact (HiGHS)            & 9.176682 & 9.176682 & 0.000 & 0.000 & 14.7\\
+          & SA, own start            & 9.176682 & 9.176682 & 0.000 & -- & 0.0\\
+          & SA, LP-rounded start     & 9.176750 & 9.176682 & 0.001 & -- & 0.0\\
+          & SA-solo, own start       & 9.188359 & 9.176682 & 0.127 & -- & 0.0\\
+          & SA-solo, LP-rounded start& 9.193204 & 9.176682 & 0.179 & -- & 0.0\\
+          & GA, penalty              & 9.229146 & 9.176682 & 0.572 & -- & 92.7\\
+          & random search            & 10.817779& 9.176682 & 17.88 & -- & 150.1\\
+\addlinespace
+$M{=}200$ & exact (HiGHS, not proven)& 24.945887& 24.875537& 0.283 & 0.953 & 120.0\\
+          & SA, own start            & 24.884626& 24.875537& 0.037 & -- & 0.0\\
+          & SA, LP-rounded start     & 24.884657& 24.875537& 0.037 & -- & 0.0\\
+          & SA-solo, own start       & 24.975725& 24.875537& 0.403 & -- & 0.0\\
+          & SA-solo, LP-rounded start& 25.018192& 24.875537& 0.573 & -- & 0.0\\
+          & GA, penalty              & 25.293901& 24.875537& 1.682 & -- & 107.0\\
+          & random search            & 35.851362& 24.875537& 44.12 & -- & 170.8\\
+\addlinespace
+$M{=}400$ & exact (HiGHS, not proven)& 55.339800& 54.924503& 0.757 & 1.251 & 120.1\\
+          & SA, own start            & 54.945982& 54.924503& 0.039 & -- & 0.0\\
+          & SA, LP-rounded start     & 54.947637& 54.924503& 0.042 & -- & 0.0\\
+          & SA-solo, own start       & 55.193688& 54.924503& 0.490 & -- & 0.0\\
+          & SA-solo, LP-rounded start& 55.179680& 54.924503& 0.464 & -- & 0.0\\
+          & GA, penalty              & 55.985455& 54.924503& 1.932 & -- & 175.6\\
+          & random search            & 105.306838$^*$& 54.924503& 91.73 & -- & 329.0\\
+\bottomrule
+\end{tabular}}
+
+\noindent{\small $^*$random search was infeasible on 2 of its 10 seeds at $M{=}400$ (8/10 feasible); the value shown is the mean over the 8 feasible runs only, so it understates how often the method fails outright at this size.}
+
+\hint{All ``Value'' entries are the mean over 10 seeds (feasible runs only, see the random-search caveat above); Time is the mean wall-clock seconds per run. Source: results/scaling\_runs.csv (scaling matrix) and results/exact\_scaling.json (exact rows). SA/SA-solo times are all under 0.5s at every size, hence 0.0.}
+
+\subsection*{On the start argument}
+GA and random search are unaffected by the \texttt{start} argument by construction: both always begin from their own fresh random draw (GA's population, random search's first candidate), exactly as Checkpoint 4 required, and the code never reads \texttt{start}. So for these two methods, "own start" and "LP-rounded start" are literally the same run -- a legitimate instance of "nothing," stated here rather than wasting the budget rerunning something that cannot differ. SA and SA-solo do use \texttt{start}: our own rounding rule (documented in \texttt{experiments/build\_rounded\_start.py}) takes the LP relaxation of the team's reference model (\texttt{src/model/build.py}, same model as the exact solver) on the scaled instance and, for each VM, assigns it to the zone-allowed server with the largest LP fraction $y_{k,l}$, breaking ties toward the currently least-loaded allowed server. The rounded start is capacity-feasible at $M{=}100$ but not at $M{=}200$ or $M{=}400$ (a few servers come out slightly over on memory; both SA variants handle an infeasible supplied start by searching from it until a feasible state is found, well inside the budget). The rounded start changes SA's and SA-solo's final cost by at most 0.1\% at any size tested -- a real but small effect, smaller than the gap between SA and SA-solo themselves.
+
+\subsection*{Figure F2}
+\includegraphics[width=0.85\textwidth]{F2_final.png}
+
+\subsection*{Analysis}
+
+The exact solver proves optimality at $M{=}100$ in 14.7s and does not prove it at $M{=}200$ or $M{=}400$ within the 120s cap (solver gaps 0.953\% and 1.251\%, both honestly reported from the solver's own best bound, not read off the word "Optimal"). So the break point for this storyline and this model sits between $M{=}100$ and $M{=}200$.
+
+At both sizes where the exact solver fails to prove optimality, SA's own-start result is already \emph{below} the exact solver's own 120-second incumbent: at $M{=}200$, SA reaches 24.884626 against the exact solver's 24.945887; at $M{=}400$, SA reaches 54.945982 against 55.339800. So the approximate method overtakes the time-limited exact solver's incumbent at exactly the sizes where the exact solver stops proving optimality -- not before, since at $M{=}100$ the exact solver already matches SA exactly (both find 9.176682, SA with zero variance).
+
+What three sizes cannot show: whether this crossover is a one-time effect of $M{=}200$ being just past the exact solver's practical limit, or whether the margin between SA and the exact incumbent keeps growing as $M$ grows further -- that needs more than two post-breakdown points to see a trend, and all three sizes used the same 120-second cap, so we cannot tell whether a longer time limit would let the exact solver catch back up at $M{=}200$ or $M{=}400$. An additional experiment that would help: rerun the exact solver at $M{=}200$ with a much longer cap (say 1200s) to see whether its incumbent keeps improving fast enough to overtake SA again, or whether it has effectively stalled on its bound.
+
+GA and random search scale the same way they did at the team's own size: GA stays feasible on every seed at all three sizes but its gap to best known grows with $M$ (0.57\% at 100, 1.68\% at 200, 1.93\% at 400), and it costs far more wall-clock time than SA or SA-solo for it (93-176s mean per run here, against well under one second for either SA variant) without ever beating them on cost. Random search degrades faster still: its gap to best known grows from 17.9\% at $M{=}100$ to 44.1\% at $M{=}200$ to 91.7\% at $M{=}400$, and at $M{=}400$ it is no longer reliably feasible at all, failing on 2 of its 10 seeds (the value reported there is the mean over the 8 feasible runs, so the true gap including failures is worse than the table shows). Both confirm the same scaling story as Table 2 at a larger size: SA's local-move neighbourhood is the only one of the four methods that keeps up with the exact solver as $M$ grows.
+
+\section{Method-selection memo}
+
+\emph{To: the owner of the cloud placement problem. From: Team T12. Re: which optimizer to run.}
+
+\begin{tabularx}{\textwidth}{@{}lXXX@{}}
+\toprule
+ & Own instance ($M{=}35$) & Medium scaled ($M{=}200$) & Large scaled ($M{=}400$)\\
+\midrule
+Problem & Place 35 VMs on 10 servers under zone + capacity limits, minimize total latency. & 200 VMs, 57 servers, same rules. & 400 VMs, 114 servers, same rules.\\
+Method & Exact solver (HiGHS) & SA (own start) & SA (own start)\\
+Result and its level & 5.268322, proven optimal (gap 0.000\%) & 24.884626, gap to best known 0.037\% & 54.945982, gap to best known 0.039\%\\
+Check & Solver's own best bound meets the solution (gap $\le10^{-6}$); cross-checked against SA's independent result, identical to 6 decimals at $M{=}35,100$. & Checker (\texttt{evaluate\_B}) re-verifies feasibility and cost on every reported run; 10/10 seeds feasible, std 0.004 (own start). & Same checker re-verification; 10/10 feasible, std 0.009.\\
+Risk & None at this size -- exact and SA agree. & Exact solver cannot prove optimality in 120s at this size, so "0.037\% gap" is relative to the best value found so far, not a mathematical certificate. & Same caveat, larger: exact solver's own gap is 1.25\% here, so SA's advantage over it could narrow or widen with more solver time -- untested beyond 120s.\\
+\bottomrule
+\end{tabularx}
+
+\subsection*{Recommendation for the real situation}
+For the team's own instance size, either method works and the exact solver is actually preferable: it is fast (1.2s) and gives a certified optimum, so there is no reason to settle for a heuristic. Once the problem grows past roughly 100 VMs, switch to SA (either variant; the pair's tuned version has the edge): it already matches or beats the exact solver's own 120-second incumbent at $M{=}200$ and $M{=}400$, runs in well under a second, and its result is checker-verified and reproducible to the seed. GA is not recommended at any size tested here -- it is consistently worse than SA on cost and far slower (53-195s per run depending on size, against SA's well under 1s), for no accuracy advantage; its only edge would be on problems where SA's two-move neighbourhood (transfer, swap) is a poor fit, which this storyline does not show. Random search is worse again, both on cost (17.9-91.7\% gap to best known, growing fastest of any method as $M$ grows) and on reliability (2 of 10 seeds infeasible at $M{=}400$), and should not be used past the smallest instance sizes.
+
+\subsection*{What would change the recommendation}
+A fill ratio close to 100\% (CPU or memory) would change this: SA's exhaustive local-move search and GA's survive-the-penalty approach both rely on there being room to place VMs without violating capacity almost everywhere, which is why random search is already 10/10 feasible here. If capacity were tight enough that most assignments were infeasible, the zone-respecting-but-capacity-blind operators both methods use (SA's transfer/swap, GA's crossover/mutation) would spend much more of their budget rejecting or penalizing infeasible moves, and a method with an explicit repair step could become competitive again. Similarly, if the exact solver's 120s incumbent kept improving fast in the untested longer-time experiment above, the recommendation to switch away from it at $M{=}200$ would need revisiting.
+
+\appendix
+\section{Authorship}
+\begin{tabularx}{\textwidth}{@{}XXXXl@{}}
+\toprule
+Block & Wrote the code & Ran the experiment & Wrote the text & Signature\\
+\midrule
+1. Model & & & & \\
+2. Comparison & & & & \\
+3. Scaling & & & & \\
+4. Memo & & & & \\
+\bottomrule
+\end{tabularx}
+
+\section{Declarations}
+External code and AI-assistant use are declared in \texttt{README.md}, section ``Final'', one table per author, in the format of Checkpoint 4.
+
+\end{document}
