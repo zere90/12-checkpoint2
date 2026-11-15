@@ -1,0 +1,8 @@
+{
+  "instance": "cp34_instance(12,B,2), M=35",
+  "objective": 5.268322083990175,
+  "bound": 5.268322083990175,
+  "solver_gap": 0.0,
+  "proven": true,
+  "seconds": 1.3
+}
