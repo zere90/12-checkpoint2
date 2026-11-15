@@ -1,9 +1,87 @@
 {
-  "ref_obj_exact": 5.268322083990175,
+  "params": {
+    "T0": 0.820689,
+    "Tend": 0.000795
+  },
+  "ref_obj_exact": 5.268322083990168,
   "ref_check_exact": 5.268322083990169,
-  "cp1_obj_exact": 7.5301121610827,
+  "cp1_obj_exact": 7.592549860959521,
   "ref_obj_sa": 5.268322083990169,
   "ref_check_sa": 5.268322083990169,
   "cp1_obj_sa": 6.968945461299242,
-  "same_assignment": false
+  "same_assignment": false,
+  "sa_all_seeds": [
+    {
+      "seed": 0,
+      "ref_obj": 5.268322083990169,
+      "ref_check": 5.268322083990169,
+      "cp1_obj": 6.968945461299242,
+      "same_as_exact": false
+    },
+    {
+      "seed": 1,
+      "ref_obj": 5.268322083990169,
+      "ref_check": 5.268322083990169,
+      "cp1_obj": 6.965134162536266,
+      "same_as_exact": false
+    },
+    {
+      "seed": 2,
+      "ref_obj": 5.268322083990169,
+      "ref_check": 5.268322083990169,
+      "cp1_obj": 7.469782943979429,
+      "same_as_exact": false
+    },
+    {
+      "seed": 3,
+      "ref_obj": 5.268322083990169,
+      "ref_check": 5.268322083990169,
+      "cp1_obj": 7.81746335576921,
+      "same_as_exact": false
+    },
+    {
+      "seed": 4,
+      "ref_obj": 5.268322083990169,
+      "ref_check": 5.268322083990169,
+      "cp1_obj": 7.031375815997271,
+      "same_as_exact": false
+    },
+    {
+      "seed": 5,
+      "ref_obj": 5.268322083990169,
+      "ref_check": 5.268322083990169,
+      "cp1_obj": 7.5417922788845715,
+      "same_as_exact": false
+    },
+    {
+      "seed": 6,
+      "ref_obj": 5.268322083990169,
+      "ref_check": 5.268322083990169,
+      "cp1_obj": 6.732604759673542,
+      "same_as_exact": false
+    },
+    {
+      "seed": 7,
+      "ref_obj": 5.268322083990169,
+      "ref_check": 5.268322083990169,
+      "cp1_obj": 7.023759907944235,
+      "same_as_exact": false
+    },
+    {
+      "seed": 8,
+      "ref_obj": 5.268322083990169,
+      "ref_check": 5.268322083990169,
+      "cp1_obj": 7.244869449169741,
+      "same_as_exact": false
+    },
+    {
+      "seed": 9,
+      "ref_obj": 5.268322083990169,
+      "ref_check": 5.268322083990169,
+      "cp1_obj": 7.528156434107414,
+      "same_as_exact": false
+    }
+  ],
+  "cp1_obj_sa_min": 6.732604759673542,
+  "cp1_obj_sa_max": 7.81746335576921
 }

@@ -345,3 +345,42 @@ tests/test_SA-I.py, test_SA-T.py, test_ga_a.py, test_ga_p.py, test_sa_solo.py   
 results/tilesbay_*.csv/.png/.json, Zhussupbekova_*.csv, <surname>_exp.csv, <surname>_tuning.csv   per role/author
 ```
 
+
+## Final (new material for the Final assessment)
+
+All new material for the Final is under `final/` (report: `final/Final_Report.tex`/`.pdf`; code: `final/src/`); results are `results/final_*`.
+
+Reproduction commands, run from the repository root:
+
+```
+# Block 1: own-objective evaluation (Table, Conclusion)
+python final/src/block1_own_objective.py
+#   -> results/final_block1_own_objective.json
+
+# Block 2/3: exact solver re-run on the team's own instance (M=35)
+python final/src/run_exact_m35.py
+#   -> results/final_exact_m35.json
+
+# Block 3: scaling matrix (SA, SA-solo, GA, random search; M=100,200,400; seeds 0-9; own + LP-rounded start)
+python final/src/build_rounded_start.py        # writes rounded_B_100/200/400.json (LP-rounded starts)
+python final/src/run_all_scaling.py            # -> results/scaling_runs.csv (rename/copy to results/final_scaling_runs.csv)
+python final/src/run_exact.py                  # exact solver at M=100,200,400, 120s cap -> results/exact_scaling.json (rename/copy to results/final_exact_scaling.json)
+
+# Figures
+python final/src/build_f1_cp4.py               # collects per-seed best-so-far traces -> f1_cp4_traces.json
+python final/src/plot_f1.py                    # -> results/final_F1.png
+python final/src/plot_f2.py                    # -> results/final_F2.png
+```
+
+Official course starter-kit files for Block 3 (`checkpoint4_generator_PUBLIC.py`, `check_env.py` at repo root; `experiments/exact_helper.py`, `experiments/run_scaling.py`) were updated in place from the Final starter kit (adds `scaled_instance(story, size, variant)` and `check_env.py --scaled`); sanity check: `python check_env.py --scaled 200 --story B --variant 2`.
+
+Sign-off and review notes for each block are tracked in `FINAL_SIGNOFF.md` at the repo root; each reviewer edits and pushes their own row.
+
+**Declaration · Zhussupbekova Zere (Final report, Blocks 1-4 and `final/src/`)**
+
+| Tool or source | Used for | Files or sections | What was checked |
+| --- | --- | --- | --- |
+| Author's work & custom scripts | Compiled the Final report (Blocks 1-4, Appendix); wrote and ran `final/src/block1_own_objective.py`, `run_all_scaling.py`, `run_exact.py`, `run_exact_m35.py`, `build_rounded_start.py`, `build_f1_cp4.py`, `plot_f1.py`, `plot_f2.py`. | `final/Final_Report.tex`, `final/src/*.py`, this section | All reported numbers are read directly from `results/final_*` files written by these scripts, not hand-typed; the exact solver's `proven`/`solver_gap` fields (never the word "Optimal") gate every optimality claim in Blocks 1-3. |
+| Course generator, starter kit (incl. Final kit), checker | Scaled instances, exact-solver helper (`solve_milp`), feasibility/cost checking. | `checkpoint4_generator_PUBLIC.py`, `check_env.py`, `experiments/exact_helper.py`, `src/model/build.py`, `src/meta/interface.py` | `check_env.py --scaled` check values; `src.meta.interface.check` re-verifies every reported assignment's feasibility and cost. |
+| Each teammate's own Checkpoint 4 method code | SA (Tilesbay), SA-T (Tamerlan), SA-solo (Rakhima), GA-P/GA-A (Danial/Zere) used unchanged in the Block 3 scaling runs. | `src/meta/sa.py`, `src/meta/nm.py`, `src/meta/sa_solo.py`, `src/meta/ga.py`, `src/meta/ga_problem.py`, `src/meta/random_search.py` | Re-run at the team's own size (M=35) reproduces each author's own Checkpoint 4 published numbers before being re-run at the scaled sizes. |
+| AI assistant (Claude) | Drafted and iteratively corrected the Final report text and the `final/src/` scripts above, under direction and against real data at every step; incorporated reviewer corrections from Tilesbay, Tamerlan and Danial (see `FINAL_SIGNOFF.md`) verbatim into the report and underlying code. | `final/Final_Report.tex`, `final/src/*.py` | Every numeric claim was checked by actually running the corresponding script against `results/final_*` before being written into the report; three reviewer-reported discrepancies (Table 1 variable count, Table 3 runtime rounding, Block 4 memo ambiguities) were independently reproduced from the data before being fixed, not accepted on faith. |

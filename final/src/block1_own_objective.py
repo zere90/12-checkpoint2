@@ -1,6 +1,8 @@
 """Block 1: evaluate the team's own Checkpoint-1 objective F(x) = sum_j n_j(x) * u_j(x)^2
-on (a) the reference model's proven-optimal assignment and (b) the best approximate-method
-(SA) assignment, both for the CP1/CP3/CP4 instance seed=12, variant=2 (storyline B).
+on (a) the reference model's proven-optimal assignment, (b) all ten SA seeds (all of which tie
+z_ref exactly per Table 2), and (c) the exact solver's assignment, for the CP1/CP3/CP4 instance
+seed=12, variant=2 (storyline B). Extended per Tilesbay's review (FINAL_SIGNOFF.md, Block 1):
+report the full range across all ten tied-optimal SA seeds, not just seed 0.
 """
 import json
 import sys
@@ -19,7 +21,6 @@ cpu_req, cpu_cap = d['cpu_req'], d['cpu_cap']
 
 
 def cp1_objective(assign):
-    """CP1's own F(x) = sum_j n_j(x) * u_j(x)^2, assign[k] = server index of VM k."""
     total = 0.0
     for j in range(S):
         vms_on_j = [k for k in range(M) if assign[k] == j]
@@ -32,8 +33,6 @@ def cp1_objective(assign):
 
 
 def reference_objective(assign):
-    """Reference model's own latency, sum_l t_l using the piecewise-linear lower envelope,
-    for a sanity check against the exact/SA-reported value."""
     from src.meta.sa import latency
     total = 0.0
     for j in range(S):
@@ -45,7 +44,6 @@ def reference_objective(assign):
     return total
 
 
-# --- (a) exact optimum of the reference model ---
 model = build_b2_model(d)
 A = model.A
 lo = np.full(model.n_rows, -np.inf)
@@ -71,18 +69,29 @@ ref_obj_exact = float(res.fun)
 cp1_obj_exact = cp1_objective(assign_exact)
 ref_check_exact = reference_objective(assign_exact)
 
-# --- (b) SA, seed 0 (ties the proven optimum per Table 2, std=0 across all 10 seeds) ---
-sa_res = sa_solve(d, 2, 0, 100000, params={"T0": 0.820689, "Tend": 0.000795}, start=None)
-assign_sa = sa_res['solution']
-ref_obj_sa = sa_res['cost']
-cp1_obj_sa = cp1_objective(assign_sa)
-ref_check_sa = reference_objective(assign_sa)
-same_assignment = list(assign_exact) == list(assign_sa)
+SA_PARAMS = {"T0": 0.820689, "Tend": 0.000795}
+sa_per_seed = []
+for seed in range(10):
+    sa_res = sa_solve(d, 2, seed, 100000, params=SA_PARAMS, start=None)
+    assign_sa = sa_res['solution']
+    sa_per_seed.append(dict(
+        seed=seed,
+        ref_obj=sa_res['cost'],
+        ref_check=reference_objective(assign_sa),
+        cp1_obj=cp1_objective(assign_sa),
+        same_as_exact=(list(assign_sa) == list(assign_exact)),
+    ))
+
+cp1_vals = [s['cp1_obj'] for s in sa_per_seed]
+seed0 = sa_per_seed[0]
 
 out = dict(
+    params=SA_PARAMS,
     ref_obj_exact=ref_obj_exact, ref_check_exact=ref_check_exact, cp1_obj_exact=cp1_obj_exact,
-    ref_obj_sa=ref_obj_sa, ref_check_sa=ref_check_sa, cp1_obj_sa=cp1_obj_sa,
-    same_assignment=same_assignment,
+    ref_obj_sa=seed0['ref_obj'], ref_check_sa=seed0['ref_check'], cp1_obj_sa=seed0['cp1_obj'],
+    same_assignment=seed0['same_as_exact'],
+    sa_all_seeds=sa_per_seed,
+    cp1_obj_sa_min=min(cp1_vals), cp1_obj_sa_max=max(cp1_vals),
 )
 print(json.dumps(out, indent=2))
-json.dump(out, open('results/block1_own_objective.json', 'w'), indent=2)
+json.dump(out, open('results/final_block1_own_objective.json', 'w'), indent=2)
