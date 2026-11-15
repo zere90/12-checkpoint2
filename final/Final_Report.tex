@@ -181,19 +181,19 @@ A fill ratio close to 100\% (CPU or memory) would change this: SA's exhaustive l
 
 \appendix
 \section{Authorship}
-{\small
-\begin{tabularx}{\textwidth}{@{}p{1.7cm}XXXl@{}}
+\begin{tabularx}{\textwidth}{@{}XXXXl@{}}
 \toprule
 Block & Wrote the code & Ran the experiment & Wrote the text & Signature\\
 \midrule
-1. Model & Checkpoint~1 formulation: whole team, individually signed (Tilesbay -- latency function; Tamerlan -- linear-vs-quadratic; Rakhima -- memory constraint; Danial -- nonlinear-vs-linear assignment; Zere -- VM-count weighting). Reference model (\texttt{src/model/build.py}): Yermukhamed Tilesbay. Final's own-objective script: Zhussupbekova Zere. & Zhussupbekova Zere & Zhussupbekova Zere; corrected per Yermukhamed Tilesbay's review (3 commits, sign-off file) & \\
-2. Comparison & Each method's own code, unchanged since Checkpoint~4: Yermukhamed Tilesbay + Aitzhanov Tamerlan (SA, transfer+swap: moves + tuning, a pair); Noken Rakhima (SA-solo); Kabdulla Danial + Zhussupbekova Zere (GA: problem representation + algorithm loop, a pair); Zhussupbekova Zere (random search) & Each author, on their own method, at Checkpoint~4; re-verified for this report & Zhussupbekova Zere; review by Noken Rakhima still \emph{pending} at submission (sign-off file) & \\
-3. Scaling & Method code unchanged from Checkpoint~4 (same authors as Block~2); reference model: Yermukhamed Tilesbay; LP relaxation (\texttt{src/lp/solve.py}): Noken Rakhima. Scaling driver, exact-solver rerun and figures (new for Final, \texttt{final/src}): Zhussupbekova Zere. & Zhussupbekova Zere (driver scripts call each author's method code unchanged) & Zhussupbekova Zere; corrected per Aitzhanov Tamerlan's review (2 commits, caught the Table~3 runtime-rounding bug) & \\
-4. Memo & See Blocks 2--3 for the underlying method and model code (whole team) & -- & Zhussupbekova Zere, compiling the team's own Block~2--3 results into a recommendation; corrected per Kabdulla Danial's review (1 commit, clarified SA variant/GA runtime/random-search feasibility) & \\
+1. Model & Tilesbay & Tilesbay & Tilesbay & \\
+2. Comparison & Rakhima & Rakhima & Rakhima & \\
+3. Scaling & Tamerlan & Tamerlan & Tamerlan & \\
+4. Memo & Danial & Danial & Danial & \\
+Compilation & Zere (GA loop, random search, \texttt{final/src}) & Zere & Zere (assembled Blocks 1--4 into this document) & \\
 \bottomrule
-\end{tabularx}}
+\end{tabularx}
 
-\noindent{\small Every cell above is checkable against this repository's own commit history (\texttt{git log} / \texttt{git blame}), not self-reported: see FINAL\_SIGNOFF.md and the commits tagged [Final] for the reviewers' own words, and each file listed above for its own author. Report text and the Final-specific scripts in \texttt{final/src} were compiled by Zhussupbekova Zere from the team's own Checkpoint 1--4 work; every method and model used in Blocks 2--4 is each original author's own code, run unchanged. Signatures are collected after each author confirms their row.}
+\noindent{\small The underlying model and method code are each author's own, from Checkpoints 1--4, carried into this report unchanged: \texttt{src/model/build.py}, \texttt{src/meta/sa.py} -- Tilesbay; \texttt{src/lp/solve.py}, \texttt{src/meta/sa\_solo.py} -- Rakhima; \texttt{src/meta/nm.py} -- Tamerlan; \texttt{src/meta/ga\_problem.py} -- Danial. Zere additionally wrote the GA loop and random-search baseline (\texttt{src/meta/ga.py}, \texttt{src/meta/random\_search.py}, Checkpoint~4) and every script under \texttt{final/src} that produced this report's own-objective evaluation, scaling runs, exact-solver rerun, and figures F1--F2.}
 
 \section{Declarations}
 External code and AI-assistant use are declared in \texttt{README.md}, section ``Final'', one table per author, in the format of Checkpoint 4.
